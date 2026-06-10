@@ -206,6 +206,29 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   .dashboard{grid-template-columns:1fr 1fr;}
 }
 
+/* ── 연도 카드 ── */
+.year-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem;position:relative;transition:border-color .15s;}
+.year-card:hover{border-color:var(--border2);}
+.year-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+.year-card-title{font-size:1rem;font-weight:800;color:var(--blue-glow);letter-spacing:-.02em;}
+.year-card-del{background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:2px 5px;border-radius:4px;transition:color .1s;font-family:inherit;}
+.year-card-del:hover{color:var(--red);}
+.year-card-asset{font-size:1.5rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:2px;}
+.year-card-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text3);margin-top:4px;}
+.year-card-gain{font-size:12px;font-weight:700;color:var(--green);}
+.year-card-bar-wrap{background:var(--surface);border-radius:3px;height:4px;margin-top:8px;overflow:hidden;}
+.year-card-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .4s;}
+.year-card-date{font-size:10px;color:var(--text3);margin-top:6px;}
+
+/* 빠른 년도 버튼 */
+.quick-yr-btn{padding:5px 11px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;}
+.quick-yr-btn:hover{border-color:var(--blue);color:var(--blue-glow);background:var(--blue-dim);}
+
+/* 시나리오 년도 버튼 */
+.scen-yr-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;}
+.scen-yr-btn:hover{border-color:var(--blue);color:var(--blue-glow);}
+.scen-yr-btn.active{background:var(--blue-dim);border-color:var(--blue);color:var(--blue-glow);}
+
 @media print{
   header,.api-banner,.disclaimer,.header-btn{display:none;}
   body{background:#fff;color:#000;}
@@ -430,9 +453,54 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <div class="divider"></div>
 
-<!-- ⑦ 시나리오 비교 -->
+<!-- ⑦ 연도별 수익 예측 -->
 <section>
-  <div class="sec-title">⑦ 3가지 시나리오 비교 (10년 후)</div>
+  <div class="sec-title">⑦ 연도별 수익 예측 — 원하는 년도를 추가해서 확인하세요</div>
+  <div class="card" style="margin-bottom:1rem;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--text2);font-weight:500;">년도 추가</span>
+      <div style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:4px 10px;">
+        <button onclick="adjustYearInput(-1)" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:0 4px;font-family:inherit;line-height:1;">−</button>
+        <input id="yearInput" type="number" min="1" max="50" value="10"
+          style="background:none;border:none;color:var(--text);font-size:15px;font-weight:700;width:48px;text-align:center;outline:none;font-family:inherit;"
+          onkeydown="if(event.key==='Enter')addYearCard()">
+        <button onclick="adjustYearInput(1)" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:0 4px;font-family:inherit;line-height:1;">+</button>
+        <span style="font-size:12px;color:var(--text3);">년</span>
+      </div>
+      <button onclick="addYearCard()" style="padding:7px 18px;border-radius:var(--radius);background:var(--blue);border:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+        + 추가
+      </button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:4px;">
+        <button onclick="addQuickYear(5)"  class="quick-yr-btn">5년</button>
+        <button onclick="addQuickYear(10)" class="quick-yr-btn">10년</button>
+        <button onclick="addQuickYear(15)" class="quick-yr-btn">15년</button>
+        <button onclick="addQuickYear(20)" class="quick-yr-btn">20년</button>
+        <button onclick="addQuickYear(30)" class="quick-yr-btn">30년</button>
+      </div>
+      <button onclick="clearYearCards()" style="margin-left:auto;padding:5px 12px;border-radius:6px;background:var(--red-dim);border:1px solid var(--red);color:var(--red);font-size:11px;cursor:pointer;font-family:inherit;">전체 삭제</button>
+    </div>
+  </div>
+  <div id="yearCardsWrap" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+  <div id="yearCardsEmpty" style="font-size:12px;color:var(--text3);text-align:center;padding:2rem;display:none;">
+    위에서 년도를 입력하고 <strong style="color:var(--blue-glow)">+ 추가</strong> 버튼을 누르거나 빠른 버튼을 클릭하세요.
+  </div>
+</section>
+
+<!-- ⑧ 3가지 시나리오 비교 -->
+<section>
+  <div class="sec-title">⑧ 3가지 시나리오 비교 (현재 설정 납입금 기준)</div>
+  <div class="card" style="margin-bottom:1rem;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--text2);">비교 기준 년도:</span>
+      <div style="display:flex;gap:6px;">
+        <button onclick="setScenYear(5)"  class="scen-yr-btn" id="sybtn5">5년</button>
+        <button onclick="setScenYear(10)" class="scen-yr-btn active" id="sybtn10">10년</button>
+        <button onclick="setScenYear(20)" class="scen-yr-btn" id="sybtn20">20년</button>
+        <button onclick="setScenYear(30)" class="scen-yr-btn" id="sybtn30">30년</button>
+      </div>
+      <span id="scenYearLabel" style="font-size:11px;color:var(--text3);">10년 후 기준</span>
+    </div>
+  </div>
   <div class="grid-3" id="scenarioCompare"></div>
 </section>
 
@@ -929,23 +997,141 @@ function loadMemo() {
 }
 
 // ═══════════════════════════════════════════════════════
+// 연도별 수익 카드
+// ═══════════════════════════════════════════════════════
+let yearCards = []; // [{year, id}]
+let yearCardIdSeq = 0;
+let scenYear = 10;
+
+function adjustYearInput(delta) {
+  const el = document.getElementById('yearInput');
+  const v  = Math.min(50, Math.max(1, (parseInt(el.value)||10) + delta));
+  el.value = v;
+}
+
+function addQuickYear(y) {
+  addYearCardWithYear(y);
+}
+
+function addYearCard() {
+  const y = parseInt(document.getElementById('yearInput').value) || 10;
+  addYearCardWithYear(y);
+}
+
+function addYearCardWithYear(y) {
+  if (y < 1 || y > 50) return;
+  // 중복 방지
+  if (yearCards.find(c => c.year === y)) {
+    // 이미 있으면 깜빡임 효과
+    const existing = document.getElementById('ycard_'+yearCards.find(c=>c.year===y).id);
+    if (existing) {
+      existing.style.borderColor = 'var(--yellow)';
+      setTimeout(() => existing.style.borderColor = '', 600);
+    }
+    return;
+  }
+  yearCardIdSeq++;
+  yearCards.push({year: y, id: yearCardIdSeq});
+  yearCards.sort((a,b) => a.year - b.year);
+  renderYearCards();
+}
+
+function removeYearCard(id) {
+  yearCards = yearCards.filter(c => c.id !== id);
+  renderYearCards();
+}
+
+function clearYearCards() {
+  yearCards = [];
+  renderYearCards();
+}
+
+function renderYearCards() {
+  const wrap  = document.getElementById('yearCardsWrap');
+  const empty = document.getElementById('yearCardsEmpty');
+  if (!yearCards.length) {
+    wrap.innerHTML  = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const init    = getMoneyVal('initAmount');
+  const monthly = getMoneyVal('monthlyAmount');
+  const rate    = getRate();
+  const startStr = document.getElementById('startDate').value || '2026-07';
+  const [sy, smo] = startStr.split('-').map(Number);
+
+  // 최대 자산 (막대 비율용)
+  const maxY   = Math.max(...yearCards.map(c=>c.year));
+  const { assets: maxAssets } = calcGrowth(init, monthly, rate, maxY);
+  const maxAsset = maxAssets[maxY-1] || 1;
+
+  wrap.innerHTML = yearCards.map(c => {
+    const { assets, principals } = calcGrowth(init, monthly, rate, c.year);
+    const a    = assets[c.year-1];
+    const p    = principals[c.year-1];
+    const gain = p > 0 ? Math.round((a-p)/p*100) : 0;
+    const profit = a - p;
+    const barW = Math.round((a / maxAsset) * 100);
+
+    // 달성 예상 연월
+    const targetDate = new Date(sy, smo-1 + c.year*12, 1);
+    const dateLabel  = `${targetDate.getFullYear()}년 ${targetDate.getMonth()+1}월 도달`;
+
+    return `<div class="year-card" id="ycard_${c.id}">
+      <div class="year-card-header">
+        <div class="year-card-title">${c.year}년 후</div>
+        <button class="year-card-del" onclick="removeYearCard(${c.id})" title="삭제">✕</button>
+      </div>
+      <div class="year-card-asset">${fmt(a)}</div>
+      <div class="year-card-row">
+        <span>납입 원금 ${fmt(p)}</span>
+        <span class="year-card-gain">+${gain}%</span>
+      </div>
+      <div class="year-card-row">
+        <span>수익금</span>
+        <span style="color:var(--cyan);font-weight:600;">${fmt(profit)}</span>
+      </div>
+      <div class="year-card-bar-wrap">
+        <div class="year-card-bar" style="width:${barW}%"></div>
+      </div>
+      <div class="year-card-date">📅 ${dateLabel}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// 시나리오 년도 선택
+// ═══════════════════════════════════════════════════════
+function setScenYear(y) {
+  scenYear = y;
+  document.querySelectorAll('.scen-yr-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('sybtn'+y);
+  if (btn) btn.classList.add('active');
+  document.getElementById('scenYearLabel').textContent = y + '년 후 기준';
+  renderScenario();
+}
+
+// ═══════════════════════════════════════════════════════
 // 시나리오
 // ═══════════════════════════════════════════════════════
 function renderScenario() {
   const init    = getMoneyVal('initAmount');
   const monthly = getMoneyVal('monthlyAmount');
   const scenarios = [
-    {label:'보수적', rate:5,  color:'var(--text2)', desc:'시장 침체·횡보 지속'},
+    {label:'보수적', rate:5,  color:'var(--text2)',     desc:'시장 침체·횡보 지속'},
     {label:'중립',   rate:10, color:'var(--blue-glow)', desc:'S&P500 역사적 평균'},
-    {label:'낙관',   rate:15, color:'var(--green)', desc:'AI·반도체 슈퍼사이클'},
+    {label:'낙관',   rate:15, color:'var(--green)',     desc:'AI·반도체 슈퍼사이클'},
   ];
   document.getElementById('scenarioCompare').innerHTML = scenarios.map(s => {
-    const { assets, principals } = calcGrowth(init, monthly, s.rate, 10);
-    const a = assets[9], p = principals[9];
+    const { assets, principals } = calcGrowth(init, monthly, s.rate, scenYear);
+    const a = assets[scenYear-1], p = principals[scenYear-1];
     const gain = p > 0 ? Math.round((a-p)/p*100) : 0;
     return `<div class="card" style="border-color:${s.color};text-align:center;">
       <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">${s.desc}</div>
       <div style="font-size:13px;font-weight:700;color:${s.color};margin-bottom:8px;">${s.label} (연 ${s.rate}%)</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">${scenYear}년 후</div>
       <div style="font-size:1.6rem;font-weight:800;color:${s.color};letter-spacing:-.03em;">${fmt(a)}</div>
       <div style="font-size:11px;color:var(--text2);margin-top:6px;">원금 ${fmt(p)} → <span style="color:${s.color}">+${gain}%</span></div>
       <div style="font-size:11px;color:var(--text3);margin-top:3px;">수익 ${fmt(a-p)}</div>
@@ -1006,6 +1192,7 @@ function renderAll() {
   renderFX();
   renderChecklist();
   renderScenario();
+  renderYearCards();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1024,6 +1211,8 @@ renderTabs();
 renderStocks();
 renderAll();
 renderCal();
+// 기본 연도 카드
+[5, 10, 20].forEach(y => addYearCardWithYear(y));
 </script>
 </body>
 </html>
