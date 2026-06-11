@@ -1,0 +1,190 @@
+{
+  "generated_at": "2026-06-11T00:13:02.873234+00:00",
+  "generated_at_kr": "2026-06-11 00:13",
+  "total_news": 15,
+  "disclaimer": "투자 참고용 도구이며 정확도를 보장하지 않습니다. 모든 투자 결정과 손익 책임은 본인에게 있습니다.",
+  "stocks": [
+    {
+      "name": "엔비디아",
+      "market": "US",
+      "code": "NVDA",
+      "score": 30.0,
+      "pct": 65.0,
+      "news_count": 3,
+      "positive_count": 3,
+      "negative_count": 0,
+      "neutral_count": 0,
+      "avg_sentiment": 1.0,
+      "top_positive": [
+        "엔비디아 신고가 경신, AI칩 수요 폭증에 강세 지속",
+        "엔비디아 젠슨황 'AI 혁명 이제 시작', 목표가 상향",
+        "Nvidia surges on record data center revenue beat"
+      ],
+      "top_negative": [],
+      "signal": "긍정 관심",
+      "confidence": "낮음"
+    },
+    {
+      "name": "SK하이닉스",
+      "market": "KR",
+      "code": "000660",
+      "score": 20.0,
+      "pct": 60.0,
+      "news_count": 2,
+      "positive_count": 2,
+      "negative_count": 0,
+      "neutral_count": 0,
+      "avg_sentiment": 1.0,
+      "top_positive": [
+        "SK하이닉스 HBM 대규모 수주 확대, 실적 기대감 상승",
+        "SK하이닉스 목표가 상향, 메모리 슈퍼사이클 수혜"
+      ],
+      "top_negative": [],
+      "signal": "긍정 관심",
+      "confidence": "낮음"
+    },
+    {
+      "name": "삼성전자",
+      "market": "KR",
+      "code": "005930",
+      "score": 10.0,
+      "pct": 55.0,
+      "news_count": 1,
+      "positive_count": 1,
+      "negative_count": 0,
+      "neutral_count": 0,
+      "avg_sentiment": 1.0,
+      "top_positive": [
+        "삼성전자 파운드리 신규 계약 호재, 주가 강세"
+      ],
+      "top_negative": [],
+      "signal": "중립",
+      "confidence": "낮음"
+    },
+    {
+      "name": "NAVER",
+      "market": "KR",
+      "code": "035420",
+      "score": 10.0,
+      "pct": 55.0,
+      "news_count": 1,
+      "positive_count": 1,
+      "negative_count": 0,
+      "neutral_count": 0,
+      "avg_sentiment": 1.0,
+      "top_positive": [
+        "네이버 AI 사업 성장 기대, 실적 개선 전망"
+      ],
+      "top_negative": [],
+      "signal": "중립",
+      "confidence": "낮음"
+    },
+    {
+      "name": "애플",
+      "market": "US",
+      "code": "AAPL",
+      "score": 10.0,
+      "pct": 55.0,
+      "news_count": 1,
+      "positive_count": 1,
+      "negative_count": 0,
+      "neutral_count": 0,
+      "avg_sentiment": 1.0,
+      "top_positive": [
+        "애플 아이폰 신모델 출시 기대, 공급망 확대"
+      ],
+      "top_negative": [],
+      "signal": "중립",
+      "confidence": "낮음"
+    },
+    {
+      "name": "마이크로소프트",
+      "market": "US",
+      "code": "MSFT",
+      "score": 10.0,
+      "pct": 55.0,
+      "news_count": 1,
+      "positive_count": 1,
+      "negative_count": 0,
+      "neutral_count": 0,
+      "avg_sentiment": 1.0,
+      "top_positive": [
+        "마이크로소프트 AI 투자 확대 발표, 강세"
+      ],
+      "top_negative": [],
+      "signal": "중립",
+      "confidence": "낮음"
+    },
+    {
+      "name": "팔란티어",
+      "market": "US",
+      "code": "PLTR",
+      "score": 10.0,
+      "pct": 55.0,
+      "news_count": 1,
+      "positive_count": 1,
+      "negative_count": 0,
+      "neutral_count": 0,
+      "avg_sentiment": 1.0,
+      "top_positive": [
+        "팔란티어 정부 계약 수주 급증, 신고가 돌파"
+      ],
+      "top_negative": [],
+      "signal": "중립",
+      "confidence": "낮음"
+    },
+    {
+      "name": "카카오",
+      "market": "KR",
+      "code": "035720",
+      "score": 0.0,
+      "pct": 50.0,
+      "news_count": 0,
+      "positive_count": 0,
+      "negative_count": 0,
+      "neutral_count": 0,
+      "avg_sentiment": 0.0,
+      "top_positive": [],
+      "top_negative": [],
+      "signal": "중립",
+      "confidence": "낮음"
+    },
+    {
+      "name": "현대차",
+      "market": "KR",
+      "code": "005380",
+      "score": -10.0,
+      "pct": 45.0,
+      "news_count": 1,
+      "positive_count": 0,
+      "negative_count": 1,
+      "neutral_count": 0,
+      "avg_sentiment": -1.0,
+      "top_positive": [],
+      "top_negative": [
+        "현대차 전기차 판매 부진, 약세 지속"
+      ],
+      "signal": "중립",
+      "confidence": "낮음"
+    },
+    {
+      "name": "테슬라",
+      "market": "US",
+      "code": "TSLA",
+      "score": -15.0,
+      "pct": 42.5,
+      "news_count": 2,
+      "positive_count": 0,
+      "negative_count": 2,
+      "neutral_count": 0,
+      "avg_sentiment": -0.75,
+      "top_positive": [],
+      "top_negative": [
+        "테슬라 판매 둔화 우려 확대, 약세 전환",
+        "Tesla faces lawsuit risk, shares drop on concern"
+      ],
+      "signal": "중립",
+      "confidence": "낮음"
+    }
+  ]
+}
