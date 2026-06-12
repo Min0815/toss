@@ -1,0 +1,526 @@
+{
+  "generated_at_kr": "2026-06-11 00:13",
+  "focus_stocks": [
+    {
+      "name": "엔비디아",
+      "market": "US",
+      "code": "NVDA",
+      "news_count": 3,
+      "news_pct": 65.0,
+      "combined_pct": 66.8,
+      "avg_sentiment": 1.0,
+      "timeline": [
+        {
+          "title": "엔비디아 신고가 경신, AI칩 수요 폭증에 강세 지속",
+          "source": "연합뉴스",
+          "sentiment": 1.0,
+          "label": "긍정",
+          "keywords": [
+            "+신고가",
+            "+강세"
+          ],
+          "is_high_impact": false,
+          "published": ""
+        },
+        {
+          "title": "엔비디아 젠슨황 'AI 혁명 이제 시작', 목표가 상향",
+          "source": "한국경제",
+          "sentiment": 1.0,
+          "label": "긍정",
+          "keywords": [
+            "+목표가",
+            "+상향"
+          ],
+          "is_high_impact": true,
+          "published": ""
+        },
+        {
+          "title": "Nvidia surges on record data center revenue beat",
+          "source": "Bloomberg",
+          "sentiment": 1.0,
+          "label": "긍정",
+          "keywords": [
+            "+surge",
+            "+beat",
+            "+record"
+          ],
+          "is_high_impact": false,
+          "published": ""
+        }
+      ],
+      "keywords": [
+        {
+          "word": "엔비디아",
+          "count": 2
+        },
+        {
+          "word": "신고가",
+          "count": 1
+        },
+        {
+          "word": "경신",
+          "count": 1
+        },
+        {
+          "word": "수요",
+          "count": 1
+        },
+        {
+          "word": "폭증에",
+          "count": 1
+        },
+        {
+          "word": "강세",
+          "count": 1
+        },
+        {
+          "word": "지속",
+          "count": 1
+        },
+        {
+          "word": "젠슨황",
+          "count": 1
+        },
+        {
+          "word": "혁명",
+          "count": 1
+        },
+        {
+          "word": "이제",
+          "count": 1
+        },
+        {
+          "word": "시작",
+          "count": 1
+        },
+        {
+          "word": "목표가",
+          "count": 1
+        }
+      ],
+      "signal": {
+        "combined_pct": 66.8,
+        "action": "관심",
+        "reason": "결합 지수 66.8% — 평균 거래량, 감성 지수가 중립선 상방 → 긍정 추세. 긍정 뉴스 우세이나 다른 지표와 함께 확인하세요.",
+        "color": "teal",
+        "strength": 3,
+        "volatility_note": "⚡ 주요 인물 발언 1건 포함 — 단기 변동성이 클 수 있습니다.",
+        "components": {
+          "news_sentiment": {
+            "pct": 65.0,
+            "label": "긍정 관심",
+            "weight": "70%"
+          },
+          "rsi": {
+            "est": 58,
+            "label": "상승 모멘텀",
+            "note": "추가 상승 여력 있음",
+            "contrib": 10,
+            "weight": "10%"
+          },
+          "volume": {
+            "signal": "보통",
+            "label": "평균 거래량",
+            "note": "뉴스 관심 보통 수준",
+            "contrib": 3,
+            "weight": "12%"
+          },
+          "ma": {
+            "signal": "상향",
+            "label": "기준선 위 (상승 추세)",
+            "note": "감성 지수가 중립선 상방 → 긍정 추세",
+            "contrib": 8,
+            "weight": "8%"
+          }
+        },
+        "disclaimer": "⚠️ RSI·거래량은 뉴스 데이터 기반 추정값입니다. 토스증권 API 연동 후 실제 OHLCV 데이터로 대체됩니다."
+      },
+      "alert": "🚨 감성 지수 급등! 전일 대비 +50.0%p",
+      "score_delta": 50.0,
+      "high_impact_news": [
+        {
+          "title": "엔비디아 젠슨황 'AI 혁명 이제 시작', 목표가 상향",
+          "source": "한국경제",
+          "sentiment": 1.0,
+          "label": "긍정",
+          "keywords": [
+            "+목표가",
+            "+상향"
+          ],
+          "is_high_impact": true,
+          "published": "",
+          "figures": [
+            "젠슨황"
+          ]
+        }
+      ],
+      "sentiment_ratio": {
+        "positive": 3,
+        "negative": 0,
+        "neutral": 0
+      },
+      "score_history": [
+        {
+          "date": "2026-06-05",
+          "score": 5
+        },
+        {
+          "date": "2026-06-06",
+          "score": 12
+        },
+        {
+          "date": "2026-06-07",
+          "score": 8
+        },
+        {
+          "date": "2026-06-08",
+          "score": 18
+        },
+        {
+          "date": "2026-06-09",
+          "score": 22
+        },
+        {
+          "date": "2026-06-10",
+          "score": 15
+        },
+        {
+          "date": "2026-06-11",
+          "pct": 65.0,
+          "combined_pct": 66.8
+        }
+      ]
+    },
+    {
+      "name": "테슬라",
+      "market": "US",
+      "code": "TSLA",
+      "news_count": 2,
+      "news_pct": 42.5,
+      "combined_pct": 43.2,
+      "avg_sentiment": -0.75,
+      "timeline": [
+        {
+          "title": "Tesla faces lawsuit risk, shares drop on concern",
+          "source": "CNBC",
+          "sentiment": -1.0,
+          "label": "부정",
+          "keywords": [
+            "-drop",
+            "-risk",
+            "-lawsuit",
+            "-concern"
+          ],
+          "is_high_impact": false,
+          "published": ""
+        },
+        {
+          "title": "테슬라 판매 둔화 우려 확대, 약세 전환",
+          "source": "Reuters",
+          "sentiment": -0.5,
+          "label": "부정",
+          "keywords": [
+            "+확대",
+            "-둔화",
+            "-약세",
+            "-우려"
+          ],
+          "is_high_impact": false,
+          "published": ""
+        }
+      ],
+      "keywords": [
+        {
+          "word": "테슬라",
+          "count": 1
+        },
+        {
+          "word": "판매",
+          "count": 1
+        },
+        {
+          "word": "둔화",
+          "count": 1
+        },
+        {
+          "word": "우려",
+          "count": 1
+        },
+        {
+          "word": "확대",
+          "count": 1
+        },
+        {
+          "word": "약세",
+          "count": 1
+        },
+        {
+          "word": "전환",
+          "count": 1
+        },
+        {
+          "word": "Tesla",
+          "count": 1
+        },
+        {
+          "word": "faces",
+          "count": 1
+        },
+        {
+          "word": "lawsuit",
+          "count": 1
+        },
+        {
+          "word": "risk",
+          "count": 1
+        },
+        {
+          "word": "shares",
+          "count": 1
+        }
+      ],
+      "signal": {
+        "combined_pct": 43.2,
+        "action": "중립",
+        "reason": "결합 지수 43.2% — 뚜렷한 방향성이 없습니다. 거래량 미약, 중립 구간.",
+        "color": "gray",
+        "strength": 1,
+        "volatility_note": "",
+        "components": {
+          "news_sentiment": {
+            "pct": 42.5,
+            "label": "중립",
+            "weight": "70%"
+          },
+          "rsi": {
+            "est": 50,
+            "label": "중립 구간",
+            "note": "방향성 불명확",
+            "contrib": 0,
+            "weight": "10%"
+          },
+          "volume": {
+            "signal": "미약",
+            "label": "거래량 미약",
+            "note": "뉴스·관심 부족, 신호 신뢰도 낮음",
+            "contrib": -5,
+            "weight": "12%"
+          },
+          "ma": {
+            "signal": "중립",
+            "label": "기준선 근처 (횡보)",
+            "note": "중립 구간",
+            "contrib": 0,
+            "weight": "8%"
+          }
+        },
+        "disclaimer": "⚠️ RSI·거래량은 뉴스 데이터 기반 추정값입니다. 토스증권 API 연동 후 실제 OHLCV 데이터로 대체됩니다."
+      },
+      "alert": "🚨 감성 지수 급등! 전일 대비 +52.5%p",
+      "score_delta": 52.5,
+      "high_impact_news": [],
+      "sentiment_ratio": {
+        "positive": 0,
+        "negative": 2,
+        "neutral": 0
+      },
+      "score_history": [
+        {
+          "date": "2026-06-05",
+          "score": 10
+        },
+        {
+          "date": "2026-06-06",
+          "score": 5
+        },
+        {
+          "date": "2026-06-07",
+          "score": -8
+        },
+        {
+          "date": "2026-06-08",
+          "score": -12
+        },
+        {
+          "date": "2026-06-09",
+          "score": -5
+        },
+        {
+          "date": "2026-06-10",
+          "score": -10
+        },
+        {
+          "date": "2026-06-11",
+          "pct": 42.5,
+          "combined_pct": 43.2
+        }
+      ]
+    },
+    {
+      "name": "SK하이닉스",
+      "market": "KR",
+      "code": "000660",
+      "news_count": 2,
+      "news_pct": 60.0,
+      "combined_pct": 57.9,
+      "avg_sentiment": 1.0,
+      "timeline": [
+        {
+          "title": "SK하이닉스 HBM 대규모 수주 확대, 실적 기대감 상승",
+          "source": "매일경제",
+          "sentiment": 1.0,
+          "label": "긍정",
+          "keywords": [
+            "+상승",
+            "+수주",
+            "+확대",
+            "+기대",
+            "+실적"
+          ],
+          "is_high_impact": false,
+          "published": ""
+        },
+        {
+          "title": "SK하이닉스 목표가 상향, 메모리 슈퍼사이클 수혜",
+          "source": "서울경제",
+          "sentiment": 1.0,
+          "label": "긍정",
+          "keywords": [
+            "+목표가",
+            "+상향",
+            "+수혜"
+          ],
+          "is_high_impact": false,
+          "published": ""
+        }
+      ],
+      "keywords": [
+        {
+          "word": "하이닉스",
+          "count": 2
+        },
+        {
+          "word": "HBM",
+          "count": 1
+        },
+        {
+          "word": "대규모",
+          "count": 1
+        },
+        {
+          "word": "수주",
+          "count": 1
+        },
+        {
+          "word": "확대",
+          "count": 1
+        },
+        {
+          "word": "실적",
+          "count": 1
+        },
+        {
+          "word": "기대감",
+          "count": 1
+        },
+        {
+          "word": "상승",
+          "count": 1
+        },
+        {
+          "word": "목표가",
+          "count": 1
+        },
+        {
+          "word": "상향",
+          "count": 1
+        },
+        {
+          "word": "메모리",
+          "count": 1
+        },
+        {
+          "word": "슈퍼사이클",
+          "count": 1
+        }
+      ],
+      "signal": {
+        "combined_pct": 57.9,
+        "action": "중립",
+        "reason": "결합 지수 57.9% — 뚜렷한 방향성이 없습니다. 거래량 미약, 감성 지수가 중립선 상방 → 긍정 추세.",
+        "color": "gray",
+        "strength": 1,
+        "volatility_note": "",
+        "components": {
+          "news_sentiment": {
+            "pct": 60.0,
+            "label": "긍정 관심",
+            "weight": "70%"
+          },
+          "rsi": {
+            "est": 50,
+            "label": "중립 구간",
+            "note": "방향성 불명확",
+            "contrib": 0,
+            "weight": "10%"
+          },
+          "volume": {
+            "signal": "미약",
+            "label": "거래량 미약",
+            "note": "뉴스·관심 부족, 신호 신뢰도 낮음",
+            "contrib": -5,
+            "weight": "12%"
+          },
+          "ma": {
+            "signal": "상향",
+            "label": "기준선 위 (상승 추세)",
+            "note": "감성 지수가 중립선 상방 → 긍정 추세",
+            "contrib": 8,
+            "weight": "8%"
+          }
+        },
+        "disclaimer": "⚠️ RSI·거래량은 뉴스 데이터 기반 추정값입니다. 토스증권 API 연동 후 실제 OHLCV 데이터로 대체됩니다."
+      },
+      "alert": "🚨 감성 지수 급등! 전일 대비 +44.0%p",
+      "score_delta": 44.0,
+      "high_impact_news": [],
+      "sentiment_ratio": {
+        "positive": 2,
+        "negative": 0,
+        "neutral": 0
+      },
+      "score_history": [
+        {
+          "date": "2026-06-05",
+          "score": 8
+        },
+        {
+          "date": "2026-06-06",
+          "score": 10
+        },
+        {
+          "date": "2026-06-07",
+          "score": 15
+        },
+        {
+          "date": "2026-06-08",
+          "score": 12
+        },
+        {
+          "date": "2026-06-09",
+          "score": 18
+        },
+        {
+          "date": "2026-06-10",
+          "score": 16
+        },
+        {
+          "date": "2026-06-11",
+          "pct": 60.0,
+          "combined_pct": 57.9
+        }
+      ]
+    }
+  ],
+  "disclaimer": "참고용 분석이며 정확도를 보장하지 않습니다. 투자 손익 책임은 본인에게 있습니다."
+}
