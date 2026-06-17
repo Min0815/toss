@@ -1,0 +1,5 @@
+# HTTPS 강제 리다이렉트
+http://toss0815.github.io/* https://toss0815.github.io/:splat 301!
+
+# 404 처리 (단일 페이지 앱)
+/* /index.html 200
