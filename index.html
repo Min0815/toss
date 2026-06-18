@@ -1743,14 +1743,30 @@ async function loadGoldData() {
           encodeURIComponent('https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=json'))
           .then(r => r.json())
           .then(d => {
-            const q = d.symbols[0];
-            return { price: parseFloat(q.close), prev: parseFloat(q.open) };
+            const q = d.symbols && d.symbols[0];
+            const price = q && parseFloat(q.close);
+            if (!price || price <= 0) throw new Error('stooq 파싱 실패');
+            return { price, prev: parseFloat(q.open) || price };
           }),
-    // 2순위: fawazahmed0 환율 CDN (XAU→USD 역산)
-    () => fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/xau.json')
+    // 2순위: fawazahmed0 - USD 기준으로 XAU 가격 조회
+    () => fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json')
           .then(r => r.json())
           .then(d => {
-            const price = 1 / d.xau.usd; // XAU 1개당 USD
+            // d.usd.xau = 1 USD 로 살 수 있는 금(oz) 양
+            // 금 1oz 가격(USD) = 1 / d.usd.xau
+            const xauPerUsd = d.usd.xau;
+            if (!xauPerUsd || xauPerUsd <= 0) throw new Error('XAU 데이터 없음');
+            const price = 1 / xauPerUsd;
+            return { price, prev: price };
+          }),
+    // 3순위: allorigins 프록시 경유 fawazahmed0 (CDN 우회)
+    () => fetch('https://api.allorigins.win/raw?url=' +
+          encodeURIComponent('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json'))
+          .then(r => r.json())
+          .then(d => {
+            const xauPerUsd = d.usd && d.usd.xau;
+            if (!xauPerUsd || xauPerUsd <= 0) throw new Error('XAU 데이터 없음');
+            const price = 1 / xauPerUsd;
             return { price, prev: price };
           }),
   ];
