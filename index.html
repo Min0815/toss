@@ -1727,25 +1727,54 @@ let GOLD_PREV_USD = null;
 
 async function loadGoldData() {
   document.getElementById('goldUpdateTime').textContent = '시세 업데이트 중...';
+  document.getElementById('goldUSD').textContent = '--';
+
   try {
-    // 금 현물가 (XAU/USD) - frankfurter.app 기반 역산
-    // gold-api.com 무료 엔드포인트 사용
+    // ── 금 현물가: stooq.com (CORS 허용, 키 불필요) ──
+    // GC.F = 금 선물 (현물 근사치)
+    const GOLD_URL = 'https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=json';
+    const FX_URL   = 'https://open.er-api.com/v6/latest/USD';
+
     const [goldRes, fxRes] = await Promise.all([
-      fetch('https://api.gold-api.com/price/XAU'),
-      fetch('https://api.frankfurter.app/latest?from=USD&to=KRW')
+      fetch(GOLD_URL),
+      fetch(FX_URL)
     ]);
 
+    // stooq JSON 파싱
     const goldData = await goldRes.json();
-    const fxData = await fxRes.json();
+    const quote = goldData.symbols && goldData.symbols[0];
+    if (!quote || !quote.close) throw new Error('금 시세 데이터 없음');
 
-    GOLD_PRICE_USD = goldData.price;        // 1 troy oz
-    GOLD_PREV_USD  = goldData.prev_close_price || goldData.price;
-    GOLD_FX_KRW   = fxData.rates.KRW;
+    GOLD_PRICE_USD = parseFloat(quote.close);
+    GOLD_PREV_USD  = parseFloat(quote.open) || GOLD_PRICE_USD;
+
+    // 환율
+    const fxData = await fxRes.json();
+    GOLD_FX_KRW = fxData.rates && fxData.rates.KRW;
+    if (!GOLD_FX_KRW) throw new Error('환율 데이터 없음');
 
     renderGoldUI();
   } catch(e) {
-    document.getElementById('goldUpdateTime').textContent = '데이터 로딩 실패 - 잠시 후 다시 시도하세요';
-    document.getElementById('goldUSD').textContent = '오류';
+    // 2차 폴백: exchangerate.host + allorigins proxy로 금 시세
+    try {
+      // open.er-api는 성공했을 수 있으니 FX만 재시도
+      if (!GOLD_FX_KRW) {
+        const r = await fetch('https://open.er-api.com/v6/latest/USD');
+        const d = await r.json();
+        GOLD_FX_KRW = d.rates.KRW;
+      }
+      // 금 시세는 수동 안내
+      document.getElementById('goldUSD').textContent = '시세 불러오기 실패';
+      document.getElementById('goldUSDChg').textContent = '아래 수동 입력란에 직접 입력하세요';
+      if (GOLD_FX_KRW) {
+        document.getElementById('goldFX').textContent = GOLD_FX_KRW.toFixed(2) + ' ₩';
+        document.getElementById('goldFXTime').textContent = 'open.er-api 기준';
+      }
+      document.getElementById('goldUpdateTime').textContent =
+        '금 시세 API 연결 실패 — 매수/매도 계산기에 수동으로 입력하시면 계산은 가능합니다.';
+    } catch(e2) {
+      document.getElementById('goldUpdateTime').textContent = '네트워크 오류 — 잠시 후 다시 시도하세요';
+    }
   }
 }
 
