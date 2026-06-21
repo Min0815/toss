@@ -384,6 +384,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .ledger-subnav{display:flex;gap:4px;background:rgba(255,255,255,.03);padding:4px;border-radius:var(--radius-lg);margin-bottom:1rem;}
 .ledger-subnav-btn{flex:1;padding:8px 6px;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text3);background:none;border:none;border-radius:6px;cursor:pointer;font-family:inherit;transition:all .15s;}
 .ledger-subnav-btn.active{background:var(--gold-dim);color:var(--gold);}
+.ledger-period-toggle{display:flex;gap:6px;}
+.ledger-period-toggle .ledger-subnav-btn{flex:none;padding:6px 12px;border:1px solid var(--border2);border-radius:999px;background:var(--surface);}
+.ledger-period-toggle .ledger-subnav-btn.active{border-color:var(--gold);background:var(--gold-dim);color:var(--gold);}
 .ledger-upload-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:2.5rem 1rem;cursor:pointer;transition:border-color .2s;}
 .ledger-upload-zone:hover{border-color:var(--gold);}
 .ledger-cat-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px;}
@@ -1080,25 +1083,67 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     <button class="ledger-subnav-btn" id="lsub-import" onclick="switchLedgerView('import')">가져오기</button>
   </div>
 
-  <div id="ledgerMonthSelectWrap" style="display:flex;justify-content:flex-end;margin-bottom:.75rem;">
-    <select id="ledgerMonthSelect" class="modal-input" style="width:auto;" onchange="onLedgerMonthChange(this.value)"></select>
+  <div id="ledgerMonthSelectWrap" style="margin-bottom:.75rem;">
+    <div class="ledger-period-toggle">
+      <button class="ledger-subnav-btn active" id="lperiod-month" onclick="setLedgerFilterMode('month')">월별 보기</button>
+      <button class="ledger-subnav-btn" id="lperiod-range" onclick="setLedgerFilterMode('range')">기간 직접 선택</button>
+    </div>
+    <select id="ledgerMonthSelect" class="modal-input" style="margin-top:.5rem;" onchange="onLedgerMonthChange(this.value)"></select>
+    <div id="ledgerRangeWrap" style="display:none;margin-top:.5rem;align-items:center;gap:8px;">
+      <input type="date" id="ledgerRangeStart" class="modal-input" style="flex:1;">
+      <span style="color:var(--text3);font-size:12px;">~</span>
+      <input type="date" id="ledgerRangeEnd" class="modal-input" style="flex:1;">
+      <button onclick="applyLedgerRange()" style="padding:9px 14px;background:var(--gold);border:none;border-radius:var(--radius);color:#000;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">적용</button>
+    </div>
   </div>
 
   <div id="ledgerView-overview" class="ledger-view">
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="card-title">선택 기간 요약</div>
+      <div style="display:flex;gap:1.75rem;flex-wrap:wrap;">
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;">지출 합계</div><div id="ledgerPeriodExpense" style="font-family:'IBM Plex Mono',monospace;font-weight:800;color:var(--red);font-size:1.25rem;">0원</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;">수입 합계</div><div id="ledgerPeriodIncome" style="font-family:'IBM Plex Mono',monospace;font-weight:800;color:var(--green);font-size:1.25rem;">0원</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;">순증감</div><div id="ledgerPeriodNet" style="font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:1.25rem;">0원</div></div>
+      </div>
+      <div style="margin-top:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="width:32px;font-size:11px;color:var(--text3);">지출</span>
+          <div style="flex:1;background:rgba(255,255,255,.05);border-radius:4px;height:10px;overflow:hidden;"><div id="ledgerBarExpense" style="height:100%;background:var(--red);border-radius:4px;width:0%;transition:width .3s;"></div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="width:32px;font-size:11px;color:var(--text3);">수입</span>
+          <div style="flex:1;background:rgba(255,255,255,.05);border-radius:4px;height:10px;overflow:hidden;"><div id="ledgerBarIncome" style="height:100%;background:var(--green);border-radius:4px;width:0%;transition:width .3s;"></div></div>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--text3);">현재 잔고 <span id="ledgerPeriodBalanceRef" style="color:var(--gold);font-weight:700;font-family:'IBM Plex Mono',monospace;">0원</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1rem;" id="ledgerBudgetCard"></div>
     <div class="card" style="margin-bottom:1rem;">
       <div class="card-title">카테고리별 지출</div>
       <div id="ledgerPieEmpty" class="empty" style="display:none;">아직 거래 내역이 없어요. "가져오기" 탭에서 파일을 올리거나 직접 추가해보세요.</div>
       <div id="ledgerPieWrap" class="chart-wrap" style="height:220px;"><canvas id="ledgerPieChart"></canvas></div>
       <div id="ledgerCategoryList"></div>
     </div>
+    <div class="card" style="margin-bottom:1rem;" id="ledgerMomCard"></div>
     <div class="card" style="margin-bottom:1rem;" id="ledgerTrendCard">
       <div class="card-title">월별 지출 추이</div>
       <div class="chart-wrap" style="height:160px;"><canvas id="ledgerTrendChart"></canvas></div>
     </div>
+    <div class="card" style="margin-bottom:1rem;" id="ledgerTopMerchantCard"></div>
     <div class="card" id="ledgerSuggestCard">
       <div class="card-title">💡 절약 추천</div>
       <div id="ledgerSuggestions"><div style="color:var(--text3);font-size:12px;">데이터가 쌓이면 줄일 수 있는 항목을 추천해드려요.</div></div>
     </div>
+  </div>
+
+  <!-- ══ 가계부: 예산 설정 모달 ════════════════════════════════════ -->
+  <div class="modal-overlay" id="ledgerBudgetModal" style="display:none;" onclick="if(event.target===this)closeLedgerBudgetModal()">
+   <div class="modal">
+   <div class="modal-title">카테고리별 예산 설정 <button class="modal-close" onclick="closeLedgerBudgetModal()">✕</button></div>
+   <div style="font-size:11.5px;color:var(--text3);line-height:1.6;margin-bottom:1rem;">매달 카테고리별로 쓸 수 있는 금액을 정해두면, 80% 도달 시 주의, 100% 초과 시 경고로 알려드려요. 0으로 두면 해당 카테고리는 추적하지 않아요.</div>
+   <div id="ledgerBudgetFields"></div>
+   <button class="modal-btn" onclick="submitLedgerBudget()">저장</button>
+   </div>
   </div>
 
   <div id="ledgerView-tx" class="ledger-view" style="display:none;">
@@ -1108,6 +1153,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <div class="card-title" style="margin-bottom:0;">거래 내역</div>
         <button onclick="openLedgerAddModal()" style="padding:6px 14px;background:rgba(212,168,64,.12);border:1px solid rgba(212,168,64,.3);border-radius:var(--radius);color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">+ 직접 추가</button>
       </div>
+      <input type="text" id="ledgerSearchInput" class="modal-input" placeholder="🔍 가맹점/내용으로 검색" style="margin-bottom:.75rem;" oninput="onLedgerSearchInput(this.value)">
       <div id="ledgerTxList"><div class="empty">아직 거래 내역이 없어요.</div></div>
     </div>
     <button onclick="resetLedgerAll()" style="margin-top:.75rem;background:none;border:none;color:var(--text3);font-size:11px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:0;">전체 데이터 초기화</button>
@@ -2099,6 +2145,11 @@ let LEDGER_TX = [];
 let LEDGER_STARTING_BALANCE = 0;
 let LEDGER_VIEW = 'overview';
 let LEDGER_MONTH = 'all';
+let LEDGER_FILTER_MODE = 'month';
+let LEDGER_RANGE_START = '';
+let LEDGER_RANGE_END = '';
+let LEDGER_BUDGETS = {};
+let LEDGER_SEARCH = '';
 let LEDGER_ADD_TYPE = 'expense';
 let LEDGER_CSV_HEADERS = [];
 let LEDGER_CSV_ROWS = null;
@@ -2121,16 +2172,32 @@ function parseLedgerAmount(v){
   return isNaN(n)?0:n;
 }
 function normalizeLedgerDate(v){
-  if(!v) return '';
+  if(v===null||v===undefined||v==='') return '';
+  // 엑셀 날짜 셀이 cellDates:true 옵션으로 이미 Date 객체로 들어온 경우
+  if(v instanceof Date && !isNaN(v.getTime())){
+    return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`;
+  }
   const s=String(v).trim();
-  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
-  let m=s.match(/^(\d{4})[.\/](\d{1,2})[.\/](\d{1,2})/);
-  if(m) return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
-  m=s.match(/^(\d{4})(\d{2})(\d{2})/);
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m=s.match(/^(\d{4})[.\/](\d{1,2})[.\/](\d{1,2})/);
+  if(m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m=s.match(/^(\d{4})(\d{2})(\d{2})$/);
   if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  // 순수 숫자(예: 46193 또는 46193.5) → 엑셀 날짜 일련번호로 간주해 정확히 변환
+  // (new Date('46193') 같은 식으로 바로 넘기면 연도/월이 엉뚱하게 해석되는 버그가 있어 직접 계산함)
+  if(/^\d+(\.\d+)?$/.test(s)){
+    const num=parseFloat(s);
+    if(num>1 && num<200000){
+      const utcDays=Math.floor(num-25569);
+      const d=new Date(utcDays*86400*1000);
+      if(!isNaN(d.getTime())) return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+    }
+    return '';
+  }
   const d=new Date(s);
-  if(!isNaN(d.getTime())) return d.toISOString().slice(0,10);
-  return s.slice(0,10);
+  if(!isNaN(d.getTime())) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return '';
 }
 function ledgerUid(){ return 'lx_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function guessLedgerField(headers, keywords){ return headers.find(h=>keywords.some(k=>h.includes(k))) || ''; }
@@ -2139,6 +2206,7 @@ function guessLedgerField(headers, keywords){ return headers.find(h=>keywords.so
 function initLedgerTab(){
   try{ LEDGER_TX = JSON.parse(localStorage.getItem('investkit_ledger_tx')) || []; }catch(e){ LEDGER_TX = []; }
   try{ LEDGER_STARTING_BALANCE = parseFloat(localStorage.getItem('investkit_ledger_balance')) || 0; }catch(e){ LEDGER_STARTING_BALANCE = 0; }
+  try{ LEDGER_BUDGETS = JSON.parse(localStorage.getItem('investkit_ledger_budget')) || {}; }catch(e){ LEDGER_BUDGETS = {}; }
   document.getElementById('ladd-date').value = new Date().toISOString().slice(0,10);
   populateLedgerCategorySelect();
   setLedgerAddType('expense');
@@ -2147,6 +2215,7 @@ function initLedgerTab(){
 function saveLedgerData(){
   localStorage.setItem('investkit_ledger_tx', JSON.stringify(LEDGER_TX));
   localStorage.setItem('investkit_ledger_balance', String(LEDGER_STARTING_BALANCE));
+  localStorage.setItem('investkit_ledger_budget', JSON.stringify(LEDGER_BUDGETS));
   const now=new Date();
   document.getElementById('ledgerUpdateTime').textContent = `로컬 저장됨 · ${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 }
@@ -2158,11 +2227,37 @@ function switchLedgerView(view){
     document.getElementById('ledgerView-'+v).style.display = (v===view)?'block':'none';
     document.getElementById('lsub-'+v).classList.toggle('active', v===view);
   });
-  document.getElementById('ledgerMonthSelectWrap').style.display = (view==='import')?'none':'flex';
+  document.getElementById('ledgerMonthSelectWrap').style.display = (view==='import')?'none':'block';
   if(view==='overview') renderLedgerOverview();
   if(view==='tx') renderLedgerTxList();
 }
 function onLedgerMonthChange(val){ LEDGER_MONTH = val; renderLedgerOverview(); renderLedgerTxList(); }
+function setLedgerFilterMode(mode){
+  LEDGER_FILTER_MODE = mode;
+  document.getElementById('lperiod-month').classList.toggle('active', mode==='month');
+  document.getElementById('lperiod-range').classList.toggle('active', mode==='range');
+  document.getElementById('ledgerMonthSelect').style.display = mode==='month' ? 'block':'none';
+  document.getElementById('ledgerRangeWrap').style.display = mode==='range' ? 'flex':'none';
+  if(mode==='range'){
+    const sEl=document.getElementById('ledgerRangeStart'), eEl=document.getElementById('ledgerRangeEnd');
+    if(!sEl.value || !eEl.value){
+      const dates=LEDGER_TX.map(t=>t.date).filter(Boolean).sort();
+      if(dates.length){ sEl.value = sEl.value || dates[0]; eEl.value = eEl.value || dates[dates.length-1]; }
+    }
+    if(sEl.value && eEl.value){ LEDGER_RANGE_START=sEl.value; LEDGER_RANGE_END=eEl.value; }
+  }
+  renderLedgerOverview();
+  renderLedgerTxList();
+}
+function applyLedgerRange(){
+  const s=document.getElementById('ledgerRangeStart').value;
+  const e=document.getElementById('ledgerRangeEnd').value;
+  if(!s||!e){ alert('시작일과 종료일을 모두 선택해주세요.'); return; }
+  if(s>e){ alert('시작일이 종료일보다 늦을 수 없어요.'); return; }
+  LEDGER_RANGE_START=s; LEDGER_RANGE_END=e;
+  renderLedgerOverview();
+  renderLedgerTxList();
+}
 
 /* ---- derived data helpers ---- */
 function ledgerMonths(){
@@ -2170,7 +2265,12 @@ function ledgerMonths(){
   return Array.from(set).sort().reverse();
 }
 function ledgerFilteredTx(){
-  const list = LEDGER_MONTH==='all' ? LEDGER_TX : LEDGER_TX.filter(t=>t.date.slice(0,7)===LEDGER_MONTH);
+  let list;
+  if(LEDGER_FILTER_MODE==='range' && LEDGER_RANGE_START && LEDGER_RANGE_END){
+    list = LEDGER_TX.filter(t=> t.date>=LEDGER_RANGE_START && t.date<=LEDGER_RANGE_END);
+  } else {
+    list = LEDGER_MONTH==='all' ? LEDGER_TX : LEDGER_TX.filter(t=>t.date.slice(0,7)===LEDGER_MONTH);
+  }
   return [...list].sort((a,b)=> a.date<b.date?1:-1);
 }
 function ledgerCurrentBalance(){
@@ -2216,7 +2316,23 @@ function renderLedgerSummaryCards(){
   const suggestions = ledgerSavingsSuggestions();
   document.getElementById('ledgerSavingPotential').textContent = formatWon(suggestions.reduce((s,x)=>s+x.potential,0));
 }
+function renderLedgerPeriodSummary(){
+  const list = ledgerFilteredTx();
+  const exp = list.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const inc = list.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  document.getElementById('ledgerPeriodExpense').textContent = formatWon(exp);
+  document.getElementById('ledgerPeriodIncome').textContent = formatWon(inc);
+  const net = inc-exp;
+  const netEl = document.getElementById('ledgerPeriodNet');
+  netEl.textContent = (net>=0?'+':'')+formatWon(net);
+  netEl.style.color = net>=0 ? 'var(--green)' : 'var(--red)';
+  const maxVal = Math.max(exp, inc, 1);
+  document.getElementById('ledgerBarExpense').style.width = Math.round(exp/maxVal*100)+'%';
+  document.getElementById('ledgerBarIncome').style.width = Math.round(inc/maxVal*100)+'%';
+  document.getElementById('ledgerPeriodBalanceRef').textContent = formatWon(ledgerCurrentBalance());
+}
 function renderLedgerOverview(){
+  renderLedgerPeriodSummary();
   const expenseTx = ledgerFilteredTx().filter(t=>t.type==='expense');
   const totals = ledgerCategoryTotals(expenseTx);
 
@@ -2257,11 +2373,144 @@ function renderLedgerOverview(){
       30%만 줄여도 한 달 <span class="num">${formatWon(s.potential)}</span>,
       1년이면 <span class="num">${formatWon(s.potentialYear)}</span>을 아낄 수 있어요.
     </div>`).join('') : '<div style="color:var(--text3);font-size:12px;">데이터가 쌓이면 줄일 수 있는 항목을 추천해드려요.</div>';
+
+  renderLedgerBudgetCard();
+  renderLedgerMomCard();
+  renderLedgerTopMerchants();
 }
+
+/* ---- 예산 ---- */
+function ledgerThisMonthKey(){ return ledgerMonths()[0] || ''; }
+function ledgerBudgetProgress(){
+  const month = ledgerThisMonthKey();
+  if(!month) return [];
+  const spentMap={};
+  LEDGER_TX.filter(t=>t.type==='expense' && t.date.slice(0,7)===month).forEach(t=>{ spentMap[t.category]=(spentMap[t.category]||0)+t.amount; });
+  return Object.entries(LEDGER_BUDGETS).filter(([,b])=>b>0).map(([category,budget])=>{
+    const spent = spentMap[category]||0;
+    const pct = budget ? Math.round(spent/budget*100) : 0;
+    return { category, budget, spent, pct };
+  }).sort((a,b)=>b.pct-a.pct);
+}
+function renderLedgerBudgetCard(){
+  const card=document.getElementById('ledgerBudgetCard');
+  const list=ledgerBudgetProgress();
+  const headerBtn = `<button onclick="openLedgerBudgetModal()" style="padding:5px 12px;background:rgba(212,168,64,.12);border:1px solid rgba(212,168,64,.3);border-radius:var(--radius);color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${list.length?'수정':'예산 설정'}</button>`;
+  if(!list.length){
+    card.innerHTML = `<div class="card-title" style="display:flex;justify-content:space-between;align-items:center;"><span>예산</span>${headerBtn}</div><div style="color:var(--text3);font-size:12px;">카테고리별로 한 달 예산을 정해두면 80%/100% 도달 시 알려드려요.</div>`;
+    return;
+  }
+  card.innerHTML = `<div class="card-title" style="display:flex;justify-content:space-between;align-items:center;"><span>이번 달 예산</span>${headerBtn}</div>` +
+    list.map(b=>{
+      const barColor = b.pct>=100 ? 'var(--red)' : (b.pct>=80 ? 'var(--orange)' : 'var(--green)');
+      const warn = b.pct>=100 ? `⚠️ 예산 초과 (${b.pct}%)` : (b.pct>=80 ? `곧 예산 도달 (${b.pct}%)` : '');
+      return `<div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;">
+          <span style="font-weight:600;">${Security.escapeHtml(b.category)}</span>
+          <span style="color:var(--text2);font-family:'IBM Plex Mono',monospace;">${formatWon(b.spent)} / ${formatWon(b.budget)}</span>
+        </div>
+        <div style="background:rgba(255,255,255,.05);border-radius:4px;height:8px;overflow:hidden;">
+          <div style="height:100%;width:${Math.min(100,b.pct)}%;background:${barColor};border-radius:4px;"></div>
+        </div>
+        ${warn?`<div style="font-size:10.5px;color:${barColor};margin-top:3px;">${warn}</div>`:''}
+      </div>`;
+    }).join('');
+}
+function openLedgerBudgetModal(){
+  document.getElementById('ledgerBudgetFields').innerHTML = LEDGER_ALL_CATEGORIES.map(c=>`
+    <div class="modal-field">
+      <label class="modal-label">${Security.escapeHtml(c)}</label>
+      <input class="modal-input" type="number" id="lbud-${LEDGER_ALL_CATEGORIES.indexOf(c)}" placeholder="0" value="${LEDGER_BUDGETS[c]||''}">
+    </div>`).join('');
+  document.getElementById('ledgerBudgetModal').style.display='flex';
+}
+function closeLedgerBudgetModal(){ document.getElementById('ledgerBudgetModal').style.display='none'; }
+function submitLedgerBudget(){
+  const newBudgets={};
+  LEDGER_ALL_CATEGORIES.forEach((c,i)=>{
+    const v=parseFloat(document.getElementById('lbud-'+i).value);
+    if(v>0) newBudgets[c]=v;
+  });
+  LEDGER_BUDGETS=newBudgets;
+  saveLedgerData();
+  closeLedgerBudgetModal();
+  renderLedgerBudgetCard();
+}
+
+/* ---- 전월 대비 비교 ---- */
+function ledgerMonthOverMonthComparison(){
+  const months=ledgerMonths();
+  if(months.length<2) return null;
+  const cur=months[0], prev=months[1];
+  const curMap={}, prevMap={};
+  LEDGER_TX.filter(t=>t.type==='expense' && t.date.slice(0,7)===cur).forEach(t=>{ curMap[t.category]=(curMap[t.category]||0)+t.amount; });
+  LEDGER_TX.filter(t=>t.type==='expense' && t.date.slice(0,7)===prev).forEach(t=>{ prevMap[t.category]=(prevMap[t.category]||0)+t.amount; });
+  const allCats=new Set([...Object.keys(curMap), ...Object.keys(prevMap)]);
+  const rows=Array.from(allCats).map(category=>{
+    const curAmt=curMap[category]||0, prevAmt=prevMap[category]||0;
+    const isNew = prevAmt===0 && curAmt>0;
+    const pct = prevAmt>0 ? Math.round((curAmt-prevAmt)/prevAmt*100) : null;
+    return { category, curAmt, prevAmt, pct, isNew };
+  }).filter(r=>r.curAmt>0 || r.prevAmt>0)
+    .sort((a,b)=>Math.abs(b.curAmt-b.prevAmt)-Math.abs(a.curAmt-a.prevAmt))
+    .slice(0,6);
+  return { cur, prev, rows };
+}
+function renderLedgerMomCard(){
+  const card=document.getElementById('ledgerMomCard');
+  const data=ledgerMonthOverMonthComparison();
+  if(!data || !data.rows.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  const curLabel=`${parseInt(data.cur.slice(5,7),10)}월`, prevLabel=`${parseInt(data.prev.slice(5,7),10)}월`;
+  card.innerHTML = `<div class="card-title">전월 대비 비교 (${prevLabel} → ${curLabel})</div>` +
+    data.rows.map(r=>{
+      let badge;
+      if(r.isNew) badge=`<span style="color:var(--cyan);font-size:11px;font-weight:700;">신규</span>`;
+      else if(r.pct===null) badge='';
+      else {
+        const up=r.pct>0, color=up?'var(--red)':(r.pct<0?'var(--green)':'var(--text3)');
+        const arrow=up?'▲':(r.pct<0?'▼':'-');
+        badge=`<span style="color:${color};font-size:11px;font-weight:700;">${arrow} ${Math.abs(r.pct)}%</span>`;
+      }
+      return `<div class="ledger-cat-row">
+        <span class="ledger-cat-name">${Security.escapeHtml(r.category)}</span>
+        <span class="ledger-cat-amount" style="margin-right:8px;">${formatWon(r.curAmt)}</span>
+        ${badge}
+      </div>`;
+    }).join('');
+}
+
+/* ---- 가맹점 TOP ---- */
+function ledgerTopMerchants(){
+  const map={};
+  ledgerFilteredTx().filter(t=>t.type==='expense').forEach(t=>{
+    if(!map[t.desc]) map[t.desc]={ total:0, count:0 };
+    map[t.desc].total+=t.amount; map[t.desc].count+=1;
+  });
+  return Object.entries(map).map(([desc,v])=>({ desc, total:v.total, count:v.count })).sort((a,b)=>b.total-a.total).slice(0,8);
+}
+function renderLedgerTopMerchants(){
+  const card=document.getElementById('ledgerTopMerchantCard');
+  const list=ledgerTopMerchants();
+  if(!list.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  card.innerHTML = `<div class="card-title">가맹점 TOP</div>` +
+    list.map((m,i)=>`
+      <div class="ledger-cat-row">
+        <span style="width:18px;font-family:'IBM Plex Mono',monospace;color:var(--text3);font-size:11px;">${i+1}</span>
+        <span class="ledger-cat-name">${Security.escapeHtml(m.desc)}</span>
+        <span style="font-size:10.5px;color:var(--text3);margin-right:6px;">${m.count}회</span>
+        <span class="ledger-cat-amount">${formatWon(m.total)}</span>
+      </div>`).join('');
+}
+
+/* ---- 검색 ---- */
+function onLedgerSearchInput(v){ LEDGER_SEARCH = v.trim().toLowerCase(); renderLedgerTxList(); }
 function renderLedgerTxList(){
-  const list=ledgerFilteredTx();
+  let list=ledgerFilteredTx();
+  if(LEDGER_SEARCH){ list = list.filter(t=> t.desc.toLowerCase().includes(LEDGER_SEARCH) || t.category.toLowerCase().includes(LEDGER_SEARCH)); }
   const el=document.getElementById('ledgerTxList');
-  if(!list.length){ el.innerHTML='<div class="empty">이 기간에 거래 내역이 없어요.</div>'; return; }
+  if(!list.length){ el.innerHTML='<div class="empty">'+(LEDGER_SEARCH?'검색 결과가 없어요.':'이 기간에 거래 내역이 없어요.')+'</div>'; return; }
   let html=''; let lastDate=null;
   list.forEach(t=>{
     if(t.date!==lastDate){ html+=`<div class="ledger-tx-day">${t.date}</div>`; lastDate=t.date; }
@@ -2387,7 +2636,7 @@ function handleLedgerFile(e){
       let headers=[], rows=[];
       if(isExcel){
         const data=new Uint8Array(ev.target.result);
-        const wb=XLSX.read(data,{type:'array'});
+        const wb=XLSX.read(data,{type:'array', cellDates:true});
         let best=null;
         wb.SheetNames.forEach(name=>{
           const ws=wb.Sheets[name];
