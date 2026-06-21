@@ -1073,7 +1073,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     </div>
     <div class="card" style="border:1px solid rgba(67,176,122,.25);">
       <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--text3);margin-bottom:.5rem;">절약 가능 추정</div>
-      <div id="ledgerSavingPotential" style="font-size:1.7rem;font-weight:800;color:var(--green);font-family:'IBM Plex Mono',monospace;">0원</div>
+      <div id="ledgerSavingPotential" style="font-size:1.15rem;font-weight:800;color:var(--green);font-family:'IBM Plex Mono',monospace;white-space:nowrap;">0원</div>
     </div>
   </div>
 
@@ -2317,8 +2317,13 @@ function ledgerSavingsSuggestions(){
   const filtered = ledgerFilteredTx().filter(t=>t.type==='expense' && !t.excluded);
   const totals = ledgerCategoryTotals(filtered);
   return totals.filter(c=>LEDGER_DISCRETIONARY.includes(c.category) && c.total>0).slice(0,3).map(c=>{
-    const cut = Math.round(c.total*0.3/100)*100;
-    return { category:c.category, total:c.total, pct:c.pct, potential:cut, potentialYear:cut*12 };
+    const low = Math.round(c.total*0.10/100)*100;
+    const high = Math.round(c.total*0.30/100)*100;
+    return {
+      category:c.category, total:c.total, pct:c.pct,
+      low, high, lowYear: low*12, highYear: high*12,
+      potential: low, potentialHigh: high,
+    };
   });
 }
 
@@ -2342,7 +2347,11 @@ function renderLedgerSummaryCards(){
   const periodExpense = ledgerFilteredTx().filter(t=>t.type==='expense' && !t.excluded).reduce((s,t)=>s+t.amount,0);
   document.getElementById('ledgerMonthExpense').textContent = formatWon(periodExpense);
   const suggestions = ledgerSavingsSuggestions();
-  document.getElementById('ledgerSavingPotential').textContent = formatWon(suggestions.reduce((s,x)=>s+x.potential,0));
+  const lowSum = suggestions.reduce((s,x)=>s+x.low,0);
+  const highSum = suggestions.reduce((s,x)=>s+x.high,0);
+  document.getElementById('ledgerSavingPotential').textContent = suggestions.length
+    ? `${formatWon(lowSum)} ~ ${formatWon(highSum)}`
+    : '0원';
 }
 function renderLedgerPeriodSummary(){
   const list = ledgerFilteredTx();
@@ -2398,9 +2407,19 @@ function renderLedgerOverview(){
   const suggestions = ledgerSavingsSuggestions();
   document.getElementById('ledgerSuggestions').innerHTML = suggestions.length ? suggestions.map(s=>`
     <div class="ledger-suggest">
-      <b>${Security.escapeHtml(s.category)}</b>에 ${formatWon(s.total)}을 썼어요 (지출의 ${s.pct.toFixed(0)}%).
-      30%만 줄여도 한 달 <span class="num">${formatWon(s.potential)}</span>,
-      1년이면 <span class="num">${formatWon(s.potentialYear)}</span>을 아낄 수 있어요.
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+        <b>${Security.escapeHtml(s.category)}</b>
+        <span style="font-size:11px;color:var(--text3);">지출의 ${s.pct.toFixed(0)}% · ${formatWon(s.total)}</span>
+      </div>
+      <div style="position:relative;height:9px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;margin:6px 0 8px;">
+        <div style="position:absolute;left:70%;top:0;bottom:0;width:20%;background:var(--red);opacity:.55;"></div>
+        <div style="position:absolute;left:90%;top:0;bottom:0;width:10%;background:var(--red);opacity:.85;"></div>
+      </div>
+      <div class="suggestion-text">
+        10%만 줄여도 한 달 <span class="num">${formatWon(s.low)}</span>,
+        최대 30%까지 줄이면 한 달 <span class="num">${formatWon(s.high)}</span>까지 절약할 수 있어요.
+        (연간 ${formatWon(s.lowYear)} ~ ${formatWon(s.highYear)})
+      </div>
     </div>`).join('') : '<div style="color:var(--text3);font-size:12px;">데이터가 쌓이면 줄일 수 있는 항목을 추천해드려요.</div>';
 
   renderLedgerBudgetCard();
