@@ -1160,9 +1160,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <input type="text" id="ledgerSearchInput" class="modal-input" placeholder="🔍 가맹점/내용으로 검색" style="margin-bottom:.5rem;" oninput="onLedgerSearchInput(this.value)">
       <div id="ledgerSearchBulkBar" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin-bottom:.75rem;font-size:11.5px;color:var(--text3);flex-wrap:wrap;">
         <span id="ledgerSearchMatchCount"></span>
-        <div style="display:flex;gap:6px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <button onclick="bulkExcludeSearchResults(true)" style="padding:5px 10px;background:rgba(208,85,85,.12);border:1px solid rgba(208,85,85,.35);border-radius:var(--radius);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">전체 제외</button>
           <button onclick="bulkExcludeSearchResults(false)" style="padding:5px 10px;background:rgba(67,176,122,.12);border:1px solid rgba(67,176,122,.35);border-radius:var(--radius);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">전체 포함</button>
+          <button onclick="bulkDeleteSearchResults()" style="padding:5px 10px;background:rgba(208,85,85,.22);border:1px solid var(--red);border-radius:var(--radius);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">전체 삭제</button>
         </div>
       </div>
       <div id="ledgerTxList"><div class="empty">아직 거래 내역이 없어요.</div></div>
@@ -2158,10 +2159,10 @@ const LEDGER_CATEGORY_KEYWORDS = {
   '문화/여가': ['영화','cgv','메가박스','롯데시네마','공연','전시','여행'],
 };
 const LEDGER_CATEGORY_COLORS = {
-  '식비':'#43b07a','카페/간식':'#d4a840','배달':'#df7b3b','편의점':'#d4a83a','쇼핑':'#9f7ae8',
-  '패션/뷰티':'#e8638f','교통':'#4d7ef5','구독서비스':'#4dc9da','통신비':'#3abeab','의료/건강':'#5fd3a0',
-  '주거/공과금':'#8a93ab','문화/여가':'#c98fe0','교육/도서':'#6ba3d6','반려동물':'#b08968',
-  '경조사/선물':'#e0a45c','저축/투자':'#2f8f7a','기타':'#7c5dc4',
+  '배달':'#d06858','카페/간식':'#d9a778','경조사/선물':'#d0bd58','편의점':'#c6d978','식비':'#8ed058',
+  '저축/투자':'#82d978','반려동물':'#68b17a','통신비':'#78d9b2','구독서비스':'#58d0cb','교육/도서':'#78bbd9',
+  '교통':'#5880d0','주거/공과금':'#8d8db0','쇼핑':'#8458d0','문화/여가':'#be78d9','기타':'#da62d1',
+  '패션/뷰티':'#d978af','의료/건강':'#d05872',
 };
 const LEDGER_ALL_CATEGORIES = Object.keys(LEDGER_CATEGORY_COLORS);
 const LEDGER_DISCRETIONARY = ['카페/간식','배달','편의점','쇼핑','패션/뷰티','구독서비스','문화/여가'];
@@ -2597,6 +2598,20 @@ function bulkExcludeSearchResults(exclude){
   matches.forEach(t=>{ t.excluded = exclude; });
   saveLedgerData();
   renderLedgerAll();
+}
+function bulkDeleteSearchResults(){
+  const matches = ledgerSearchMatchesAll();
+  if(!matches.length) return;
+  if(!confirm(`"${LEDGER_SEARCH}" 포함 거래 전체 기간 ${matches.length}건을 영구 삭제할까요? 되돌릴 수 없어요.`)) return;
+  const ids = new Set(matches.map(t=>t.id));
+  LEDGER_TX = LEDGER_TX.filter(t=>!ids.has(t.id));
+  saveLedgerData();
+  renderLedgerAll();
+  if(LEDGER_SEARCH){
+    const remaining = ledgerSearchMatchesAll();
+    document.getElementById('ledgerSearchMatchCount').textContent = `"${LEDGER_SEARCH}" 전체 기간 ${remaining.length}건 일치`;
+    if(!remaining.length) document.getElementById('ledgerSearchBulkBar').style.display='none';
+  }
 }
 function renderLedgerTxList(){
   let list=ledgerFilteredTx();
