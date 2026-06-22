@@ -409,6 +409,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 .ledger-type-btn{flex:1;padding:8px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface);color:var(--text3);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
 .ledger-import-summary{display:flex;align-items:center;gap:6px;background:rgba(67,176,122,.08);color:var(--green);font-size:12px;padding:8px 12px;border-radius:var(--radius);margin-bottom:1rem;}
 .ledger-import-summary button{margin-left:auto;background:none;border:none;color:var(--green);cursor:pointer;font-size:13px;}
+/* ── 접기/펼치기 카드 ── */
+.lcard-hd{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;}
+.lcard-hd .card-title{margin-bottom:0;}
+.lcard-toggle{background:none;border:none;color:var(--text3);font-size:17px;cursor:pointer;padding:0 2px;line-height:1;transition:transform .2s;}
+.lcard-toggle.open{transform:rotate(180deg);}
+.lcard-body{overflow:hidden;transition:max-height .28s ease;}
+/* ── 고정/변동 ── */
+.fixed-var-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.fixed-var-chip{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;cursor:pointer;}
+.fixed-chip{background:rgba(77,126,245,.18);color:#5880d0;border:1px solid rgba(88,128,208,.4);}
+.fixed-chip.active{background:rgba(77,126,245,.35);border-color:#5880d0;}
+.var-chip{background:rgba(208,104,88,.15);color:#d06858;border:1px solid rgba(208,104,88,.35);}
+/* ── 메모 뱃지 ── */
+.tx-memo{font-size:10.5px;color:var(--gold);margin-top:1px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;}
 .modal-btn:hover{opacity:.88;}
 
 /* ── API ready ── */
@@ -1117,6 +1131,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
         <div style="margin-top:10px;font-size:11.5px;color:var(--text3);">현재 잔고 <span id="ledgerPeriodBalanceRef" style="color:var(--gold);font-weight:700;font-family:'IBM Plex Mono',monospace;">0원</span></div>
       </div>
     </div>
+    <div class="card" style="margin-bottom:1rem;" id="ledgerGoalCard"></div>
+    <div class="card" style="margin-bottom:1rem;" id="ledgerFixedVarCard"></div>
     <div class="card" style="margin-bottom:1rem;" id="ledgerBudgetCard"></div>
     <div class="card" style="margin-bottom:1rem;">
       <div class="card-title">카테고리별 지출</div>
@@ -1172,6 +1188,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   </div>
 
   <div id="ledgerView-import" class="ledger-view" style="display:none;">
+    <div class="card" style="margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div class="card-title" style="margin-bottom:2px;">내 키워드 관리</div>
+        <div style="font-size:12px;color:var(--text3);">"기타"로 잡히는 가맹점을 직접 카테고리에 등록</div>
+      </div>
+      <button onclick="openLedgerKwModal()" style="padding:7px 14px;background:rgba(212,168,64,.12);border:1px solid rgba(212,168,64,.3);border-radius:var(--radius);color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">키워드 추가</button>
+    </div>
     <div class="card">
       <label class="ledger-upload-zone" for="ledgerFileInput">
         <div style="font-size:28px;margin-bottom:6px;">📂</div>
@@ -1232,6 +1255,64 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
  <div class="modal-title">카테고리 변경 <button class="modal-close" onclick="closeLedgerCategoryEdit()">✕</button></div>
  <div id="ledgerCatEditDesc" style="font-size:12.5px;color:var(--text3);margin-bottom:12px;"></div>
  <div id="ledgerCatEditChips" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+ </div>
+</div>
+
+<!-- ══ 가계부: 고정 지출 항목 관리 모달 ══════════════════════ -->
+<div class="modal-overlay" id="ledgerFixedItemModal" style="display:none;" onclick="if(event.target===this)closeLedgerFixedItemModal()">
+ <div class="modal">
+ <div class="modal-title">고정 지출 항목 관리 <button class="modal-close" onclick="closeLedgerFixedItemModal()">✕</button></div>
+ <div style="font-size:11.5px;color:var(--text3);line-height:1.6;margin-bottom:12px;">매달 반복되는 고정 지출을 직접 등록·수정·삭제할 수 있어요.</div>
+ <div id="ledgerFixedItemList" style="margin-bottom:14px;max-height:220px;overflow-y:auto;"></div>
+ <div style="background:rgba(255,255,255,.04);border-radius:var(--radius);padding:12px;">
+   <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:10px;" id="lfi-form-title">새 항목 추가</div>
+   <input type="hidden" id="lfi-edit-id">
+   <div class="modal-grid">
+     <div class="modal-field"><label class="modal-label">항목명</label><input class="modal-input" type="text" id="lfi-name" placeholder="예: 월세, 넷플릭스"></div>
+     <div class="modal-field"><label class="modal-label">금액</label><input class="modal-input" type="number" id="lfi-amount" placeholder="0"></div>
+   </div>
+   <div class="modal-field"><label class="modal-label">메모 (선택)</label><input class="modal-input" type="text" id="lfi-memo" placeholder="예: 매달 25일 자동이체"></div>
+   <div style="display:flex;gap:8px;">
+     <button class="modal-btn" onclick="submitLedgerFixedItem()" style="flex:2;">저장</button>
+     <button class="modal-btn" id="lfi-cancel-btn" onclick="resetLedgerFixedItemForm()" style="flex:1;background:var(--surface);color:var(--text2);display:none;">취소</button>
+   </div>
+ </div>
+ </div>
+</div>
+
+<!-- ══ 가계부: 지출 목표 모달 ════════════════════════════════════ -->
+<div class="modal-overlay" id="ledgerGoalModal" style="display:none;" onclick="if(event.target===this)closeLedgerGoalModal()">
+ <div class="modal">
+ <div class="modal-title">월 지출 목표 <button class="modal-close" onclick="closeLedgerGoalModal()">✕</button></div>
+ <div style="font-size:11.5px;color:var(--text3);line-height:1.6;margin-bottom:1rem;">이번 달 총 지출 한도를 정해두면 진행률을 바로 확인할 수 있어요. 0으로 두면 목표를 해제합니다.</div>
+ <div class="modal-field"><label class="modal-label">목표 금액</label><input class="modal-input" type="number" id="lgoal-input" placeholder="예: 1500000"></div>
+ <button class="modal-btn" onclick="submitLedgerGoal()">저장</button>
+ </div>
+</div>
+
+<!-- ══ 가계부: 커스텀 키워드 모달 ════════════════════════════════ -->
+<div class="modal-overlay" id="ledgerKwModal" style="display:none;" onclick="if(event.target===this)closeLedgerKwModal()">
+ <div class="modal">
+ <div class="modal-title">내 키워드 추가 <button class="modal-close" onclick="closeLedgerKwModal()">✕</button></div>
+ <div style="font-size:11.5px;color:var(--text3);line-height:1.6;margin-bottom:1rem;">"기타"로 잡히는 가맹점명을 직접 등록하면, 그 다음부터 자동으로 해당 카테고리로 분류돼요. 기존 내역에도 즉시 반영됩니다.</div>
+ <div id="ledgerKwList" style="margin-bottom:1rem;max-height:200px;overflow-y:auto;"></div>
+ <div class="modal-field"><label class="modal-label">가맹점/키워드</label><input class="modal-input" type="text" id="lkw-keyword" placeholder="예: 맥도날드, 버거킹, GS칼텍스"></div>
+ <div class="modal-field"><label class="modal-label">카테고리</label><select class="modal-input" id="lkw-cat"></select></div>
+ <div style="display:flex;gap:8px;">
+   <button class="modal-btn" style="flex:2;" onclick="addLedgerKw()">+ 추가</button>
+   <button class="modal-btn" style="flex:1;background:var(--gold-dim);color:var(--gold);" onclick="applyKwToAllTx()">기존 내역에 모두 적용</button>
+ </div>
+ </div>
+</div>
+
+<!-- ══ 가계부: 메모 수정 모달 ═══════════════════════════════════ -->
+<div class="modal-overlay" id="ledgerMemoModal" style="display:none;" onclick="if(event.target===this)closeLedgerMemoModal()">
+ <div class="modal">
+ <div class="modal-title">메모 수정 <button class="modal-close" onclick="closeLedgerMemoModal()">✕</button></div>
+ <div id="ledgerMemoDesc" style="font-size:12px;color:var(--text3);margin-bottom:10px;"></div>
+ <div class="modal-field"><label class="modal-label">가맹점/내용 수정</label><input class="modal-input" type="text" id="lmemo-desc" placeholder="내용을 직접 입력"></div>
+ <div class="modal-field"><label class="modal-label">메모 (영수증 기록 등)</label><input class="modal-input" type="text" id="lmemo-note" placeholder="예: 팀 점심, 부모님 생신 선물"></div>
+ <button class="modal-btn" onclick="submitLedgerMemo()">저장</button>
  </div>
 </div>
 
@@ -2175,6 +2256,10 @@ let LEDGER_FILTER_MODE = 'month';
 let LEDGER_RANGE_START = '';
 let LEDGER_RANGE_END = '';
 let LEDGER_BUDGETS = {};
+let LEDGER_CUSTOM_KEYWORDS = {};   // { keyword: category }
+let LEDGER_MONTHLY_GOAL = 0;       // 0 = not set
+let LEDGER_FIXED_CATS = new Set(['통신비','주거/공과금','보험료','구독서비스','저축/투자']);
+let LEDGER_FIXED_ITEMS = []; // [{id, name, amount, memo}] - 사용자가 직접 등록한 고정 지출 항목
 let LEDGER_SEARCH = '';
 let LEDGER_ADD_TYPE = 'expense';
 let LEDGER_CSV_HEADERS = [];
@@ -2186,6 +2271,10 @@ let ledgerBudgetChartInst = null;
 
 function ledgerCategorize(desc){
   const lower=(desc||'').toLowerCase();
+  // 사용자 커스텀 키워드 우선
+  for(const kw in LEDGER_CUSTOM_KEYWORDS){
+    if(lower.includes(kw.toLowerCase())) return LEDGER_CUSTOM_KEYWORDS[kw];
+  }
   for(const cat in LEDGER_CATEGORY_KEYWORDS){
     if(LEDGER_CATEGORY_KEYWORDS[cat].some(w=>lower.includes(w))) return cat;
   }
@@ -2234,6 +2323,10 @@ function initLedgerTab(){
   try{ LEDGER_TX = JSON.parse(localStorage.getItem('investkit_ledger_tx')) || []; }catch(e){ LEDGER_TX = []; }
   try{ LEDGER_STARTING_BALANCE = parseFloat(localStorage.getItem('investkit_ledger_balance')) || 0; }catch(e){ LEDGER_STARTING_BALANCE = 0; }
   try{ LEDGER_BUDGETS = JSON.parse(localStorage.getItem('investkit_ledger_budget')) || {}; }catch(e){ LEDGER_BUDGETS = {}; }
+  try{ LEDGER_CUSTOM_KEYWORDS = JSON.parse(localStorage.getItem('investkit_ledger_kw')) || {}; }catch(e){ LEDGER_CUSTOM_KEYWORDS = {}; }
+  try{ LEDGER_MONTHLY_GOAL = parseFloat(localStorage.getItem('investkit_ledger_goal')) || 0; }catch(e){ LEDGER_MONTHLY_GOAL = 0; }
+  try{ const fc = JSON.parse(localStorage.getItem('investkit_ledger_fixed')); if(fc) LEDGER_FIXED_CATS = new Set(fc); }catch(e){ }
+  try{ LEDGER_FIXED_ITEMS = JSON.parse(localStorage.getItem('investkit_ledger_fixitems')) || []; }catch(e){ LEDGER_FIXED_ITEMS=[]; }
   document.getElementById('ladd-date').value = new Date().toISOString().slice(0,10);
   populateLedgerCategorySelect();
   setLedgerAddType('expense');
@@ -2243,6 +2336,10 @@ function saveLedgerData(){
   localStorage.setItem('investkit_ledger_tx', JSON.stringify(LEDGER_TX));
   localStorage.setItem('investkit_ledger_balance', String(LEDGER_STARTING_BALANCE));
   localStorage.setItem('investkit_ledger_budget', JSON.stringify(LEDGER_BUDGETS));
+  localStorage.setItem('investkit_ledger_kw', JSON.stringify(LEDGER_CUSTOM_KEYWORDS));
+  localStorage.setItem('investkit_ledger_goal', String(LEDGER_MONTHLY_GOAL));
+  localStorage.setItem('investkit_ledger_fixed', JSON.stringify(Array.from(LEDGER_FIXED_CATS)));
+  localStorage.setItem('investkit_ledger_fixitems', JSON.stringify(LEDGER_FIXED_ITEMS));
   const now=new Date();
   document.getElementById('ledgerUpdateTime').textContent = `로컬 저장됨 · ${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 }
@@ -2425,6 +2522,8 @@ function renderLedgerOverview(){
   renderLedgerBudgetCard();
   renderLedgerMomCard();
   renderLedgerTopMerchants();
+  renderLedgerGoalCard();
+  renderLedgerFixedVarCard();
 }
 
 /* ---- 예산 ---- */
@@ -2647,11 +2746,13 @@ function renderLedgerTxList(){
     const catHtml = t.type==='expense'
       ? `<div class="ledger-tx-cat" style="cursor:pointer;border-bottom:1px dotted var(--text3);display:inline-block;" onclick="openLedgerCategoryEdit('${t.id}')">${catLabel} ✎</div>`
       : `<div class="ledger-tx-cat">${catLabel}</div>`;
+    const memoLine = t.note ? `<div class="tx-memo" onclick="openLedgerMemoModal('${t.id}')">📝 ${Security.escapeHtml(t.note)}</div>` : '';
     html += `<div class="ledger-tx-item" style="${t.excluded?'opacity:.5;':''}">
       <span class="ledger-cat-dot" style="background:${color}"></span>
       <div class="ledger-tx-desc">
-        <div class="ledger-tx-desc-text">${Security.escapeHtml(t.desc)}</div>
+        <div class="ledger-tx-desc-text" style="cursor:pointer;" onclick="openLedgerMemoModal('${t.id}')">${Security.escapeHtml(t.desc)} ✎</div>
         ${catHtml}
+        ${memoLine}
       </div>
       <span class="ledger-tx-amount" style="color:${amtColor}">${sign}${formatWon(t.amount)}</span>
       <button class="ledger-tx-del" title="이체 등으로 표시해 계산에서 제외/포함" onclick="toggleLedgerExcluded('${t.id}')">${t.excluded?'↩':'⇄'}</button>
@@ -2922,6 +3023,265 @@ function confirmLedgerImport(){
   summaryEl.innerHTML = `✓ ${newTx.length}건 추가${skipped>0?` · 중복 ${skipped}건 제외`:''} <button onclick="document.getElementById('ledgerImportSummary').style.display='none'">✕</button>`;
   switchLedgerView('tx');
   renderLedgerAll();
+}
+
+/* ════════════════════════════════════════════════════════════
+ ══ 1. 접기/펼치기 카드 ════════════════════════════════════════
+════════════════════════════════════════════════════════════ */
+function lCardToggle(btn, bodyId){
+  const body = document.getElementById(bodyId);
+  if(!body) return;
+  const isOpen = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
+  if(isOpen){ body.style.maxHeight='0px'; btn.classList.remove('open'); btn.textContent='▼'; }
+  else { body.style.maxHeight=(body.scrollHeight+800)+'px'; btn.classList.add('open'); btn.textContent='▲'; }
+}
+function lCardHtml(id, title, rightHtml, bodyHtml, openDefault=true){
+  const bodyId=id+'Body';
+  return `<div class="lcard-hd" onclick="lCardToggle(document.getElementById('${id}Toggle'),'${bodyId}')">
+    <div class="card-title" style="margin-bottom:0;">${title}</div>
+    <div style="display:flex;align-items:center;gap:8px;" onclick="event.stopPropagation()">
+      ${rightHtml}
+      <button id="${id}Toggle" class="lcard-toggle ${openDefault?'open':''}" onclick="event.stopPropagation();lCardToggle(this,'${bodyId}')">${openDefault?'▲':'▼'}</button>
+    </div>
+  </div>
+  <div id="${bodyId}" class="lcard-body" style="max-height:${openDefault?'2000px':'0px'};">${bodyHtml}</div>`;
+}
+
+/* ════════════════════════════════════════════════════════════
+ ══ 2. 월 지출 목표 ═══════════════════════════════════════════
+════════════════════════════════════════════════════════════ */
+function renderLedgerGoalCard(){
+  const card=document.getElementById('ledgerGoalCard');
+  const editBtn=`<button onclick="openLedgerGoalModal()" style="padding:5px 12px;background:rgba(212,168,64,.12);border:1px solid rgba(212,168,64,.3);border-radius:var(--radius);color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${LEDGER_MONTHLY_GOAL?'수정':'목표 설정'}</button>`;
+  if(!LEDGER_MONTHLY_GOAL){
+    card.innerHTML=lCardHtml('lgoal','월 지출 목표',editBtn,'<div style="padding-top:10px;color:var(--text3);font-size:12px;">월 총 지출 한도를 정하면 진행률을 확인할 수 있어요.</div>',false);
+    return;
+  }
+  const thisMonth=ledgerMonths()[0]||new Date().toISOString().slice(0,7);
+  const spent=LEDGER_TX.filter(t=>t.type==='expense'&&!t.excluded&&t.date.slice(0,7)===thisMonth).reduce((s,t)=>s+t.amount,0);
+  const pct=Math.round(spent/LEDGER_MONTHLY_GOAL*100);
+  const barColor=pct>=100?'var(--red)':(pct>=80?'var(--orange)':'var(--green)');
+  const warn=pct>=100?`⚠️ 목표 초과! (${pct}%)`:(pct>=80?`곧 목표 도달 (${pct}%)`:'');
+  const body=`<div style="padding-top:12px;">
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px;">
+      <span style="color:var(--text2);">이번 달 지출</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;">${formatWon(spent)} / ${formatWon(LEDGER_MONTHLY_GOAL)}</span>
+    </div>
+    <div style="background:rgba(255,255,255,.05);border-radius:6px;height:12px;overflow:hidden;">
+      <div style="height:100%;width:${Math.min(100,pct)}%;background:${barColor};border-radius:6px;"></div>
+    </div>
+    ${warn?`<div style="font-size:11px;color:${barColor};margin-top:5px;">${warn}</div>`:''}
+    <div style="font-size:11.5px;color:var(--text3);margin-top:8px;">남은 예산: <b style="color:var(--text);">${formatWon(Math.max(0,LEDGER_MONTHLY_GOAL-spent))}</b></div>
+  </div>`;
+  card.innerHTML=lCardHtml('lgoal','월 지출 목표',editBtn,body,true);
+}
+function openLedgerGoalModal(){
+  document.getElementById('lgoal-input').value=LEDGER_MONTHLY_GOAL||'';
+  document.getElementById('ledgerGoalModal').style.display='flex';
+}
+function closeLedgerGoalModal(){ document.getElementById('ledgerGoalModal').style.display='none'; }
+function submitLedgerGoal(){
+  LEDGER_MONTHLY_GOAL=parseFloat(document.getElementById('lgoal-input').value)||0;
+  saveLedgerData(); closeLedgerGoalModal(); renderLedgerGoalCard();
+}
+
+/* ════════════════════════════════════════════════════════════
+ ══ 3. 고정 vs 변동 지출 ═══════════════════════════════════════
+════════════════════════════════════════════════════════════ */
+function renderLedgerFixedVarCard(){
+  const card=document.getElementById('ledgerFixedVarCard');
+  const expenseTx=ledgerFilteredTx().filter(t=>t.type==='expense'&&!t.excluded);
+  // 카테고리 기반 고정/변동
+  const catFixedTotal=expenseTx.filter(t=>LEDGER_FIXED_CATS.has(t.category)).reduce((s,t)=>s+t.amount,0);
+  const varTotal=expenseTx.filter(t=>!LEDGER_FIXED_CATS.has(t.category)).reduce((s,t)=>s+t.amount,0);
+  // 사용자 등록 고정 항목 합계
+  const itemFixedTotal=LEDGER_FIXED_ITEMS.reduce((s,i)=>s+i.amount,0);
+  const fixedTotal=catFixedTotal+itemFixedTotal;
+  const total=fixedTotal+varTotal||1;
+
+  const editBtn=`<button onclick="openLedgerFixedItemModal()" style="padding:5px 12px;background:rgba(212,168,64,.12);border:1px solid rgba(212,168,64,.3);border-radius:var(--radius);color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">항목 관리</button>`;
+
+  // 사용자 등록 고정 항목 목록
+  const itemsHtml = LEDGER_FIXED_ITEMS.length ? `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:8px;letter-spacing:.05em;">📌 등록된 고정 지출 항목</div>
+      ${LEDGER_FIXED_ITEMS.map(fi=>`
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:var(--text);">${Security.escapeHtml(fi.name)}</div>
+            ${fi.memo?`<div style="font-size:10.5px;color:var(--text3);">${Security.escapeHtml(fi.memo)}</div>`:''}
+          </div>
+          <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:#5880d0;font-size:13px;white-space:nowrap;">${formatWon(fi.amount)}</span>
+          <button onclick="editLedgerFixedItem('${fi.id}')" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:13px;padding:0 3px;">✎</button>
+          <button onclick="deleteLedgerFixedItem('${fi.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0 3px;">✕</button>
+        </div>`).join('')}
+      <div style="font-size:11.5px;color:var(--text3);margin-top:6px;text-align:right;">소계 <b style="color:#5880d0;">${formatWon(itemFixedTotal)}</b></div>
+    </div>` : '';
+
+  // 카테고리 토글
+  const chips=LEDGER_ALL_CATEGORIES.map(c=>{
+    const isFixed=LEDGER_FIXED_CATS.has(c);
+    return `<span class="fixed-var-chip ${isFixed?'fixed-chip':'var-chip'} ${isFixed?'active':''}" onclick="toggleFixedCat('${c}')">${c}</span>`;
+  }).join('');
+
+  const body=`<div style="padding-top:12px;">
+    <div style="display:flex;gap:1.5rem;margin-bottom:12px;">
+      <div><div style="font-size:10px;color:var(--text3);margin-bottom:2px;">고정 지출</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:1.15rem;color:#5880d0;">${formatWon(fixedTotal)}</div></div>
+      <div><div style="font-size:10px;color:var(--text3);margin-bottom:2px;">변동 지출</div><div style="font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:1.15rem;color:#d06858;">${formatWon(varTotal)}</div></div>
+    </div>
+    <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin-bottom:18px;">
+      <div style="width:${Math.round(fixedTotal/total*100)}%;background:#5880d0;transition:width .3s;"></div>
+      <div style="width:${Math.round(varTotal/total*100)}%;background:#d06858;transition:width .3s;"></div>
+    </div>
+    ${itemsHtml}
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">카테고리를 탭해서 고정/변동 전환:</div>
+    <div class="fixed-var-row">${chips}</div>
+    <div style="display:flex;gap:16px;font-size:10.5px;margin-top:8px;color:var(--text3);">
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#5880d0;vertical-align:middle;margin-right:4px;"></span>고정</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d06858;vertical-align:middle;margin-right:4px;"></span>변동</span>
+    </div>
+  </div>`;
+  card.innerHTML=lCardHtml('lfixvar','고정 vs 변동 지출',editBtn,body,true);
+}
+function toggleFixedCat(cat){
+  if(LEDGER_FIXED_CATS.has(cat)) LEDGER_FIXED_CATS.delete(cat);
+  else LEDGER_FIXED_CATS.add(cat);
+  saveLedgerData(); renderLedgerFixedVarCard();
+}
+
+/* ── 고정 지출 항목 CRUD ── */
+function openLedgerFixedItemModal(){
+  resetLedgerFixedItemForm();
+  renderLedgerFixedItemList();
+  document.getElementById('ledgerFixedItemModal').style.display='flex';
+}
+function closeLedgerFixedItemModal(){ document.getElementById('ledgerFixedItemModal').style.display='none'; }
+function renderLedgerFixedItemList(){
+  const el=document.getElementById('ledgerFixedItemList');
+  if(!LEDGER_FIXED_ITEMS.length){ el.innerHTML='<div style="color:var(--text3);font-size:12px;padding:6px 0 10px;">등록된 항목이 없어요.</div>'; return; }
+  el.innerHTML=LEDGER_FIXED_ITEMS.map(fi=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;">${Security.escapeHtml(fi.name)}</div>
+        ${fi.memo?`<div style="font-size:11px;color:var(--text3);">${Security.escapeHtml(fi.memo)}</div>`:''}
+      </div>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:#5880d0;white-space:nowrap;">${formatWon(fi.amount)}</span>
+      <button onclick="editLedgerFixedItemInModal('${fi.id}')" style="padding:4px 10px;background:rgba(212,168,64,.12);border:1px solid rgba(212,168,64,.3);border-radius:var(--radius);color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">수정</button>
+      <button onclick="deleteLedgerFixedItem('${fi.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;">✕</button>
+    </div>`).join('');
+}
+function resetLedgerFixedItemForm(){
+  document.getElementById('lfi-edit-id').value='';
+  document.getElementById('lfi-name').value='';
+  document.getElementById('lfi-amount').value='';
+  document.getElementById('lfi-memo').value='';
+  document.getElementById('lfi-form-title').textContent='새 항목 추가';
+  document.getElementById('lfi-cancel-btn').style.display='none';
+}
+function editLedgerFixedItem(id){
+  // 카드에서 직접 수정 → 모달 열어서 폼 채우기
+  openLedgerFixedItemModal();
+  editLedgerFixedItemInModal(id);
+}
+function editLedgerFixedItemInModal(id){
+  const fi=LEDGER_FIXED_ITEMS.find(x=>x.id===id);
+  if(!fi) return;
+  document.getElementById('lfi-edit-id').value=id;
+  document.getElementById('lfi-name').value=fi.name;
+  document.getElementById('lfi-amount').value=fi.amount;
+  document.getElementById('lfi-memo').value=fi.memo||'';
+  document.getElementById('lfi-form-title').textContent='항목 수정';
+  document.getElementById('lfi-cancel-btn').style.display='block';
+  document.getElementById('lfi-name').focus();
+}
+function submitLedgerFixedItem(){
+  const name=(document.getElementById('lfi-name').value||'').trim();
+  const amount=parseFloat(document.getElementById('lfi-amount').value);
+  const memo=(document.getElementById('lfi-memo').value||'').trim();
+  if(!name){ alert('항목명을 입력해주세요.'); return; }
+  if(!Security.validateNumber(amount,1,1e10)){ alert('금액을 올바르게 입력해주세요.'); return; }
+  const editId=document.getElementById('lfi-edit-id').value;
+  if(editId){
+    const fi=LEDGER_FIXED_ITEMS.find(x=>x.id===editId);
+    if(fi){ fi.name=name; fi.amount=amount; fi.memo=memo||undefined; }
+  } else {
+    LEDGER_FIXED_ITEMS.push({ id:ledgerUid(), name, amount, memo:memo||undefined });
+  }
+  saveLedgerData();
+  resetLedgerFixedItemForm();
+  renderLedgerFixedItemList();
+  renderLedgerFixedVarCard();
+}
+function deleteLedgerFixedItem(id){
+  if(!confirm('이 고정 지출 항목을 삭제할까요?')) return;
+  LEDGER_FIXED_ITEMS=LEDGER_FIXED_ITEMS.filter(fi=>fi.id!==id);
+  saveLedgerData();
+  renderLedgerFixedItemList();
+  renderLedgerFixedVarCard();
+}
+
+/* ════════════════════════════════════════════════════════════
+ ══ 4. 커스텀 키워드 ══════════════════════════════════════════
+════════════════════════════════════════════════════════════ */
+function openLedgerKwModal(){
+  document.getElementById('lkw-cat').innerHTML=LEDGER_ALL_CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  document.getElementById('lkw-keyword').value='';
+  renderLedgerKwList();
+  document.getElementById('ledgerKwModal').style.display='flex';
+}
+function closeLedgerKwModal(){ document.getElementById('ledgerKwModal').style.display='none'; }
+function renderLedgerKwList(){
+  const entries=Object.entries(LEDGER_CUSTOM_KEYWORDS);
+  document.getElementById('ledgerKwList').innerHTML=entries.length
+    ? entries.map(([kw,cat])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px;">
+        <div><b>${Security.escapeHtml(kw)}</b> <span style="color:var(--text3);">→ ${Security.escapeHtml(cat)}</span></div>
+        <button onclick="removeLedgerKw(decodeURIComponent('${encodeURIComponent(kw)}'))" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;">✕</button>
+      </div>`).join('')
+    : '<div style="color:var(--text3);font-size:12px;padding:6px 0;">등록된 키워드가 없어요.</div>';
+}
+function addLedgerKw(){
+  const kw=(document.getElementById('lkw-keyword').value||'').trim();
+  const cat=document.getElementById('lkw-cat').value;
+  if(!kw){ alert('키워드를 입력해주세요.'); return; }
+  LEDGER_CUSTOM_KEYWORDS[kw.toLowerCase()]=cat;
+  document.getElementById('lkw-keyword').value='';
+  saveLedgerData(); renderLedgerKwList();
+}
+function removeLedgerKw(kw){ delete LEDGER_CUSTOM_KEYWORDS[kw.toLowerCase()]; saveLedgerData(); renderLedgerKwList(); }
+function applyKwToAllTx(){
+  let count=0;
+  LEDGER_TX.forEach(t=>{
+    if(t.type!=='expense') return;
+    const newCat=ledgerCategorize(t.desc);
+    if(newCat!==t.category){ t.category=newCat; count++; }
+  });
+  saveLedgerData(); renderLedgerAll();
+  alert(count+'건의 카테고리가 업데이트됐어요.');
+}
+
+/* ════════════════════════════════════════════════════════════
+ ══ 5. 메모 / 내용 수정 ═══════════════════════════════════════
+════════════════════════════════════════════════════════════ */
+let LEDGER_MEMO_TX_ID=null;
+function openLedgerMemoModal(id){
+  const t=LEDGER_TX.find(x=>x.id===id);
+  if(!t) return;
+  LEDGER_MEMO_TX_ID=id;
+  document.getElementById('ledgerMemoDesc').textContent='원본: '+t.desc+' · '+formatWon(t.amount);
+  document.getElementById('lmemo-desc').value=t.desc;
+  document.getElementById('lmemo-note').value=t.note||'';
+  document.getElementById('ledgerMemoModal').style.display='flex';
+}
+function closeLedgerMemoModal(){ document.getElementById('ledgerMemoModal').style.display='none'; LEDGER_MEMO_TX_ID=null; }
+function submitLedgerMemo(){
+  const t=LEDGER_TX.find(x=>x.id===LEDGER_MEMO_TX_ID);
+  if(!t) return;
+  const newDesc=(document.getElementById('lmemo-desc').value||'').trim();
+  if(newDesc) t.desc=newDesc;
+  const note=(document.getElementById('lmemo-note').value||'').trim();
+  t.note=note||undefined;
+  if(t.type==='expense') t.category=ledgerCategorize(t.desc);
+  saveLedgerData(); closeLedgerMemoModal(); renderLedgerAll();
 }
 
 </script>
