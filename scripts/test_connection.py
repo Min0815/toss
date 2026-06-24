@@ -1,11 +1,13 @@
 """
-토스증권 API 연결 테스트 - 응답 상세 출력
+토스증권 API 연결 테스트 - 정확한 엔드포인트
 """
 import sys
 import os
 import json
 import base64
 import requests
+
+BASE_URL = "https://openapi.tossinvest.com"
 
 def main():
     print("=" * 50)
@@ -16,57 +18,60 @@ def main():
     app_secret = os.environ.get("TOSS_APP_SECRET")
 
     if not app_key or not app_secret:
-        print("❌ 환경변수 없음: TOSS_APP_KEY / TOSS_APP_SECRET")
+        print("❌ 환경변수 없음")
         sys.exit(1)
-    print(f"\n[1] 환경변수 확인 OK")
-    print(f"    APP_KEY 앞 6자리: {app_key[:6]}...")
+    print(f"\n[1] 환경변수 확인 OK (키 앞 6자: {app_key[:6]}...)")
 
     # ── 토큰 발급 ──
-    print("\n[2] 토큰 발급 시도...")
+    print("\n[2] 토큰 발급...")
     credentials = base64.b64encode(f"{app_key}:{app_secret}".encode()).decode()
-
-    try:
-        res = requests.post(
-            "https://openapi.tossinvest.com/oauth2/token",
-            headers={
-                "Authorization": f"Basic {credentials}",
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            data={"grant_type": "client_credentials"},
-            timeout=10,
-        )
-        print(f"    HTTP 상태코드: {res.status_code}")
-        print(f"    응답 전체: {res.text}")
-
-        if res.status_code != 200:
-            print("❌ 토큰 발급 실패")
-            sys.exit(1)
-
-        body = res.json()
-        token = body.get("access_token")
-        print(f"    토큰 앞 20자: {token[:20]}...")
-
-    except Exception as e:
-        print(f"❌ 토큰 발급 예외: {e}")
+    res = requests.post(
+        f"{BASE_URL}/oauth2/token",
+        headers={
+            "Authorization": f"Basic {credentials}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        data={"grant_type": "client_credentials"},
+        timeout=10,
+    )
+    print(f"    상태코드: {res.status_code}")
+    if res.status_code != 200:
+        print(f"    응답: {res.text}")
         sys.exit(1)
 
-    # ── 시세 조회 ──
-    print("\n[3] 삼성전자(005930) 시세 조회...")
-    try:
-        res2 = requests.get(
-            "https://openapi.tossinvest.com/v1/market/price",
-            headers={"Authorization": f"Bearer {token}"},
-            params={"stockCode": "005930"},
-            timeout=10,
-        )
-        print(f"    HTTP 상태코드: {res2.status_code}")
-        print(f"    응답 전체:\n{json.dumps(res2.json(), ensure_ascii=False, indent=2)}")
+    token = res.json().get("access_token")
+    expires_in = res.json().get("expires_in")
+    print(f"    토큰 발급 OK (만료: {expires_in}초)")
 
-    except Exception as e:
-        print(f"❌ 시세 조회 예외: {e}")
-        sys.exit(1)
+    # ── 엔드포인트 후보 전부 시도 ──
+    print("\n[3] 시세 엔드포인트 탐색...")
+    endpoints = [
+        ("/api/v1/stocks", {"symbols": "005930"}),
+        ("/api/v1/quotes", {"symbol": "005930"}),
+        ("/api/v1/market/stocks", {"symbols": "005930"}),
+        ("/v1/stocks", {"symbols": "005930"}),
+        ("/v1/quotes", {"symbol": "005930"}),
+        ("/api/v2/stocks", {"symbols": "005930"}),
+    ]
 
-    print("\n✅ 테스트 완료")
+    for path, params in endpoints:
+        try:
+            r = requests.get(
+                f"{BASE_URL}{path}",
+                headers={"Authorization": f"Bearer {token}"},
+                params=params,
+                timeout=10,
+            )
+            print(f"\n  {path} → HTTP {r.status_code}")
+            if r.status_code == 200:
+                print(f"  ✅ 성공! 응답:\n{json.dumps(r.json(), ensure_ascii=False, indent=2)}")
+            else:
+                body = r.json()
+                print(f"  응답: {body}")
+        except Exception as e:
+            print(f"  {path} → 예외: {e}")
+
+    print("\n✅ 탐색 완료")
 
 if __name__ == "__main__":
     main()
