@@ -8,20 +8,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-
       - name: 현재 실행 IP 확인
         run: |
           echo "=============================="
-          echo " GitHub Actions 현재 IP 주소"
-          echo "=============================="
+          echo " GitHub Actions 현재 IP:"
           curl -s https://api.ipify.org
           echo ""
           echo "=============================="
-          echo " 위 IP를 토스증권 WTS에 등록하세요"
-          echo " 설정 → Open API → 허용 IP 관리 → IP 추가"
-          echo "=============================="
+
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
 
       - name: Python 설정
         uses: actions/setup-python@v5
